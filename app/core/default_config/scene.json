@@ -1,0 +1,19 @@
+[
+    {
+        "CurrentSelectedWalkthrough": null,
+        "scene_id": "",
+        "name": "hhh",
+        "description": "nnn",
+        "file_id": "",
+        "IsDefault": false,
+        "created_by": "vishal yadav",
+        "updated_by": "vishal yadav",
+        "created_at": "2022-09-16 12:01:33.857848",
+        "updated_at": "2022-09-16 12:01:33.857848",
+        "Assets": [],
+        "Walkthroughs": [],
+        "StoragePath": null,
+        "ProjectId": "4ce75a04-42eb-4e79-90f2-df4fe1a78e20",
+        "WalkthroughGallary": null
+    }
+]

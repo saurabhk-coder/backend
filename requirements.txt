@@ -1,0 +1,68 @@
+# HRMS / FastAPI - Python 3.14
+# Modern dependency set. Existing Pydantic v1 code must be migrated to Pydantic v2.
+
+# ------------------------------
+# FastAPI / ASGI
+# ------------------------------
+fastapi>=0.118,<1.0
+uvicorn[standard]>=0.35,<1.0
+
+# ------------------------------
+# Pydantic / configuration
+# ------------------------------
+pydantic[email]>=2.12,<3.0
+pydantic-settings>=2.10,<3.0
+python-dotenv>=1.0,<2.0
+
+# ------------------------------
+# HTTP
+# ------------------------------
+requests>=2.32,<3.0
+httpx>=0.28,<1.0
+
+# ------------------------------
+# Authentication / security
+# ------------------------------
+PyJWT>=2.10,<3.0
+pwdlib[argon2]>=0.2,<1.0
+cryptography>=44,<48
+python-multipart>=0.0.20,<1.0
+
+# ------------------------------
+# Database
+# ------------------------------
+SQLAlchemy>=2.0,<3.0
+psycopg2-binary>=2.9,<3.0
+sqlalchemy-json>=0.7,<1.0
+alembic>=1.15,<2.0
+
+# ------------------------------
+# Azure
+# ------------------------------
+azure-storage-blob>=12.25,<13.0
+azure-mgmt-storage>=23.0,<24.0
+
+# ------------------------------
+# Utilities
+# ------------------------------
+loguru>=0.7,<1.0
+validators>=0.34,<1.0
+itsdangerous>=2.2,<3.0
+aiofiles>=24.1,<25.0
+
+# ------------------------------
+# ML / NLP
+# ------------------------------
+transformers>=4.50,<6.0
+
+# ------------------------------
+# Optional legacy dependency
+# ------------------------------
+# Keep only if the application imports fastapi_restful directly.
+# fastapi-restful>=0.6,<1.0
+
+# NOTE:
+# - Do not pin Starlette separately; FastAPI manages its compatible version.
+# - 'wheel' is not required as an application dependency.
+# - passlib/bcrypt/python-jose were replaced by pwdlib/Argon2 + PyJWT
+#   for the new authentication stack.

@@ -1,0 +1,1 @@
+from app.auth_service.db import Base

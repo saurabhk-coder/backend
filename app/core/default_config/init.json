@@ -1,0 +1,22 @@
+[
+    {
+        "project_id": "c1a94b96-97e7-4ea7-b7bb-e53a99279475",
+        "project_name": "Demo Project",
+        "project_description": "df",
+        "CreateBy": "565 676",
+        "ProjectOwner": "565 676",
+        "location": "Gurugram, India",
+        "start_date": "2023-10-12 19:19:35.996459",
+        "end_date": "",
+        "StoragePath": "/Projects/c1a94b96-97e7-4ea7-b7bb-e53a99279475",
+        "Layouts": [],
+        "Dependencies": [],
+        "Library": {
+            "Name": null,
+            "Description": null,
+            "ProjectID": null,
+            "StoragePath": null,
+            "Items": []
+        }
+    }
+]

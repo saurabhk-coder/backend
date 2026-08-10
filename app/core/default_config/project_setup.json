@@ -1,0 +1,5 @@
+{
+	"default_projects" : ["/Projects/projectId","/Projects/projectId/Scenes", "/Projects/projectId/Docs", "/Projects/projectId/Chat"],
+	"account_container":"c-"
+}
+
