@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional,List
 
 from app.auth_service.schemas.base import BaseResponseSchema
@@ -22,8 +22,7 @@ class UserBase(BaseModel):
     mobileNumber: Optional[str] = ""
     isactive: Optional[bool] = True
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Users(UserBase):
     pass
@@ -62,8 +61,7 @@ class User(BaseModel):
 	creditPoints:Optional[int]=0
 	subscriptionTypeId:Optional[int]=1
 	
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 
 class Current_user(User):
 	accountId:str=""
@@ -80,8 +78,7 @@ class SignupResponse(BaseModel):
 	lastName: Optional[str]=""
 	countryCode: Optional[str]=""
 	isActive:boolean= True
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 
 class ResetPasswordRequest(BaseModel):
 	password: str =""
@@ -98,23 +95,20 @@ class InviteRequest(BaseModel):
 class Country(BaseModel):
 	countryCode: str
 	countryName: str
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 
 class CountryDbResponse(BaseResponseModel,BaseModel):
 	country: List[Country] =[]
 
 class CountryListResponse(BaseResponseModel,BaseModel):
 	country: List[Country]
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 
 class CheckUserResponse(BaseResponseModel,BaseModel):
 	user_exist: bool = False
 	error: bool = False
 	message: str = ""
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 
 class AddUserRequest(BaseModel):
 	username: str

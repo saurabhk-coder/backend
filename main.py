@@ -13,7 +13,7 @@ from app.auth_service.services.securityservice import SECURITY_SERVICE
 def get_application() -> FastAPI:
     #application = FastAPI()
     application = FastAPI(
-    title="Twinn API",
+    title="aaralia API",
     # root_path = "/api/auth",
     openapi_url=f"{AppSettings.API.API_V1_STR}/openapi.json",
     version="1.0.1",

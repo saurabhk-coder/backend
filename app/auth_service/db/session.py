@@ -2,7 +2,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from ...core import AppSettings
 
-engine = create_engine(AppSettings.DB.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True,pool_size=32, max_overflow=64,connect_args={"application_name":"dev_auth_api"})
+engine = create_engine(
+    AppSettings.DB.SQLALCHEMY_DATABASE_URI,
+    pool_pre_ping=True,
+    pool_size=32,
+    max_overflow=64,
+    connect_args={
+        "application_name": "dev_auth_api",
+        "options": "-csearch_path=hrms,public"
+    }
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine,expire_on_commit=False)
 
 class SessionManager:

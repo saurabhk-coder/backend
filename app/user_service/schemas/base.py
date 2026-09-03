@@ -1,5 +1,5 @@
 import datetime
-from pydantic import BaseModel,  validator
+from pydantic import BaseModel, ConfigDict,  validator
 
 class DateTimeModelMixin(BaseModel):
 	created_at: datetime.datetime = None
@@ -16,6 +16,5 @@ class BaseResponseSchema(BaseModel):
 	error : bool = False
 	message: str = ""
 	success:bool=True
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 

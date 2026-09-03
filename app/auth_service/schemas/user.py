@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 
@@ -11,8 +11,7 @@ class UserBase(BaseModel):
     countryCode: Optional[str] = None
     is_active: Optional[bool] = True
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AddFiledRequest(BaseModel):
     file_size:str=""

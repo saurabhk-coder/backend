@@ -7,7 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 def get_application() -> FastAPI:
     application = FastAPI(
-                title="Twinn API",
+                title="aaralia API",
                 version="1.0.0",
         )
     add_middlewares(application)

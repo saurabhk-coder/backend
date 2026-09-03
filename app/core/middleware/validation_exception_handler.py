@@ -2,8 +2,7 @@ from typing import Callable, List
 from fastapi import  HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
-
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 class ValidationErrorLoggingRoute(APIRoute):
     def get_route_handler(self) -> Callable:

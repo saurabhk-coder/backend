@@ -1,6 +1,5 @@
 import json
 # from ..crud.crud_user import CRUD_USER
-from ..services.file_manager_service import AZURE_FILE_MANAGER_SERVICE
 from app.core.default_config.account_setup import ACCOUNT_CONFIGURATION
 from app.core.default_config.project_setup import PROJECT_CONFIGURATION
 from ..schemas import AddFiledRequest
@@ -32,8 +31,7 @@ class DefaultAccountSetting:
 			file_request.folder_name = single_path
 			text_file_full_name = str(single_path)+"/"+"Readme.txt"
 			file_obj = open(self.sample_file, 'r').read()
-			AZURE_FILE_MANAGER_SERVICE.upload_file(text_file_full_name[1:], file_obj
-            , container_name)
+			
 			# CRUD_USER.add_new_folder(db, file_request)
 			
 

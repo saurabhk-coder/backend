@@ -8,22 +8,18 @@ from ..db import Base
 
 class UsersDb(Base):
 	__tablename__ = "users"
-	__table_args__ = {'extend_existing': True} 
+	__table_args__ = {"schema": "hrms"}
 	id = Column(UUID, primary_key=True, server_default=DefaultClause(text("gen_random_uuid()")))
-	username = Column(String, unique=True, index=True)
+	organization_id = Column(UUID,  index=True)
+	role_id = Column(UUID,  index=True)
 	email= Column(String, unique=True, index=True)
-	password_salt= Column(String,  nullable=True)
+	password_hash= Column(String,  nullable=True)
 	first_name= Column(String,  nullable=True)
 	last_name=Column(String,   nullable=True)
 	country_code= Column(String,  nullable=False)
-	profile_image= Column(String,  nullable=True)
-	is_active = Column(Boolean(), default=True)
-	is_verified=Column(Boolean(), default=False)
+	status= Column(String,  nullable=True)
 	created_at= Column(String, default=datetime.utcnow())
 	updated_at= Column(String, nullable=True)
-	created_by= Column(String, nullable=True)
-	updated_by= Column(String, nullable=True)
-	app_version= Column(String, nullable=True)
 
 class CountryDB(Base):
 	__tablename__ = "country"

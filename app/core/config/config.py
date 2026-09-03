@@ -77,7 +77,7 @@ class EmailSettings(BaseSettings):
 
     EMAIL_TEST_USER: Optional[EmailStr] = None
     USERS_OPEN_REGISTRATION: bool = False
-    PROJECT_NAME: str = "TWINN"
+    PROJECT_NAME: str = "aaralia"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -87,7 +87,7 @@ class EmailSettings(BaseSettings):
     @field_validator("EMAILS_FROM_NAME")
     @classmethod
     def get_project_name(cls, value: Optional[str]) -> str:
-        return value or "TWINN"
+        return value or "aaralia"
 
 
 class DefaultSettings(BaseSettings):

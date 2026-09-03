@@ -5,7 +5,7 @@ from app.middleware.validation_exception_handler import ValidationErrorLoggingRo
 
 def get_application() -> FastAPI:
     application = FastAPI(
-                title="Twinn Auth API",
+                title="aaralia Auth API",
                 description="API's for future.",
                 version="1.0.0",
         )

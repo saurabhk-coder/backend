@@ -99,7 +99,7 @@ class HtmlMsgConfig:
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <title>Twinn CRM</title>
+  <title>aaralia CRM</title>
 </head>
 <body style="
       background-color: #f6f6f6;
@@ -257,7 +257,7 @@ class HtmlMsgConfig:
                         color: #565659;
                       ">
                         We’ve received a request to reset your password. Please use this code to reset the password
-                        for the TWINN account.click on link {url}</p>
+                        for the aaralia account.click on link {url}</p>
 
                         <p style="
                         font-family: sans-serif;
@@ -300,7 +300,7 @@ class HtmlMsgConfig:
                 margin: 0;
                 color: #565659;
               ">
-             TWINN Team
+             aaralia Team
               </p>
                       </div>
                     </td>
@@ -345,7 +345,7 @@ class HtmlMsgConfig:
                         color: #999999;
                         font-size: 12px;
                         text-align: center;
-                      ">Twinn Team</span>
+                      ">aaralia Team</span>
                   <br />
                   <!-- Don't like these emails?
                   <a href="#" style="
