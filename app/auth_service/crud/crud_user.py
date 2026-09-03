@@ -1,10 +1,7 @@
-from datetime import date, timedelta
-from typing import Any, Dict, Optional,List
-import bcrypt
+from typing import  Optional,List
 from sqlalchemy.orm import Session
 from psycopg2 import errors
 
-from app.user_service.schemas.user import UserListResponse
 from ..models import *
 from ..schemas import User,CountryDbResponse
 from passlib.context import CryptContext
@@ -17,7 +14,9 @@ class CRUDUser():
 		self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 	def __get_password_hash(self, password: str):
-		return self.pwd_context.hash(password[0])
+		if len(password.encode("utf-8")) > 72:
+			raise ValueError("Password cannot exceed 72 bytes")
+		return self.pwd_context.hash(password)
    
 	def get_by_email(self, db: Session,  email: str) -> Optional[UserDb]:
 		return db.query(UserDb).filter((UserDb.email).ilike(email)).first()
@@ -55,57 +54,6 @@ class CRUDUser():
 
 		db.add(db_signup)
 		db.commit()
-		db_client: ClientDB = ClientDB( client_name = "Default Client", 
-										created_by = db_signup.user_id,
-										account_id = db_signup.account_id,
-										contact_number = "",
-										email = "",
-										logo_image = "",
-										website = "",
-										about = "",
-										
-									)
-		db.add(db_client)
-		db.commit()
-		db_client: ClientDB = ClientDB( client_name = "Default Client", 
-										created_by = db_signup.user_id,
-										account_id = db_signup.account_id
-									)
-		db.add(db_client)
-		db.commit()
-		db_project: ProjectDB = ProjectDB( project_name = "Demo D", 
-									client_id = db_client.client_id,
-									project_description = "Demo Project",
-									project_type = "Hospitality",
-									created_by = db_signup.user_id,
-									account_id = db_signup.account_id,
-									flag = 0,
-									status=1,
-									due_date = date.today()+timedelta(days=30),
-									address = "",
-									contact = "",
-									contact_point = "",
-									start_date = date.today()+timedelta(days=30),
-									end_date = date.today()+timedelta(days=30),
-									project_image = ""
-									
-									
-								)
-		db.add(db_project)
-		db.commit()
-		
-
-		db_test: ProjectTeamDB = ProjectTeamDB(
-						user_id=db_signup.user_id,
-						account_id=db_signup.account_id,
-						project_id = db_project.project_id,
-						role = 1,
-						status = 1,
-						created_by = db_signup.user_id,
-			        )
-		
-		db.add(db_test)
-		db.commit()
 		db.close()
 		# db.refresh(db_signup)	
 		return db_signup
@@ -127,27 +75,25 @@ class CRUDUser():
 		db.refresh(db_signup)	
 		return db_signup
 
-	def add_new_folder(self, db: Session, request:FolderDB)-> FolderDB:
-		db_folder: FolderDB = FolderDB( folder_name = request.folder_name,
-		                            file_name =request.file_name,
-									display_name = request.display_name,
-									file_url = request.file_url,
-									created_by = request.user_id,
-									account_id = request.account_id,
-									
-								)
-		db.add(db_folder)
-		db.commit()
-		db.refresh(db_folder)
-		return db_folder
 
-	def update_password(self, db: Session, password_salt,username)-> User:
-		pwhash = bcrypt.hashpw(str(password_salt).encode(encoding='UTF-8',errors='strict'), bcrypt.gensalt())
-		password_hash = (pwhash.decode('utf8')).replace('$2b','$2a')
-		user_db=db.query(UserDb).filter(UserDb.email == username).first()
+	def update_password(self, db: Session, password_salt, username) -> User:
+		password = str(password_salt)
+
+		if len(password.encode("utf-8")) > 72:
+			raise ValueError("Password cannot exceed 72 bytes")
+
+		password_hash = self.pwd_context.hash(password)
+
+		user_db = db.query(UserDb).filter(UserDb.email == username).first()
+
+		if user_db is None:
+			raise ValueError("User not found")
+
 		user_db.password_salt = password_hash
+
 		db.commit()
 		db.refresh(user_db)
+
 		return user_db
 
 	def update_user(self, db: Session, request:UserDb)-> User:

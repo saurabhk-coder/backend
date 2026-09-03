@@ -1,11 +1,9 @@
 from datetime import timedelta
 import json
 from sqlalchemy.orm import Session
-from app.auth_service.services.account_setup import ACCOUNT_SETUP
 
 from app.user_service.crud.crud_user import CRUD_USER
 
-# from app.auth_service.services.account_setup import ACCOUNT_SETUP
 from ...core.config import AppSettings
 from app.auth_service.schemas.auth import HTMLResponse, UpdateProfile, UpdateProfileResponse
 
@@ -127,14 +125,6 @@ class AuthService(IAuthService):
         db_request.password_salt = request.password,
         db_request.isActive = True
         db_request.countryCode = request.countryCode
-        account = CRUD_USER.add_new_account(db,str(request.accountName))
-        db_request.accountId = account.id
-        ACCOUNT_SETUP.new_account_setup(db,account.id)
-        template_file = ACCOUNT_CONFIGURATION.DEFAULT_ACCOUNT_FILE
-        f = open(template_file)
-        template_file = json.load(f)		
-        container_name = 'c-'+str(account.id)
-        user = CRUD_USER.add_new_user(db, db_request,container_name)
         response = SignupResponse
         response.username = user.username
         response.firstName = user.first_name
@@ -142,8 +132,6 @@ class AuthService(IAuthService):
         response.email = user.email
         response.countryCode = user.country_code
         response.isActive = user.is_active
-        response.accountId = str(account.id)
-        response.containerName = container_name
         response.profileImage = user.profile_image
         response.mobileNumber = user.mobile_number
         response.userId = str(user.user_id)
@@ -160,12 +148,8 @@ class AuthService(IAuthService):
         db_request.countryCode = "IN"
         db_request.appleId = request.appleId
         account = CRUD_USER.add_new_account(db,str(''))
-        db_request.accountId = account.id
-        # ACCOUNT_SETUP.new_account_setup(db,account.id)
-        # template_file = ACCOUNT_CONFIGURATION.DEFAULT_ACCOUNT_FILE
-        # f = open(template_file)
-        # template_file = json.load(f)		
-        container_name = 'c-'+str(account.id)
+        db_request.accountId = account.id		
+        container_name = 'c-'
         user = CRUD_USER.add_app_user(db, db_request,container_name)
         response = SignupResponse
         response.username = user.username

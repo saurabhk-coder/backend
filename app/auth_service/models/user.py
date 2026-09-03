@@ -13,13 +13,14 @@ class UserDb(Base):
 	organization_id = Column(UUID,  index=True)
 	role_id = Column(UUID,  index=True)
 	email= Column(String, unique=True, index=True)
-	password_hash= Column(String,  nullable=True)
+	password_salt= Column(String,  nullable=True)
 	first_name= Column(String,  nullable=True)
 	last_name=Column(String,   nullable=True)
 	country_code= Column(String,  nullable=False)
 	status= Column(String,  nullable=True)
 	created_at= Column(String, default=datetime.utcnow())
 	updated_at= Column(String, nullable=True)
+	is_active= Column(String, nullable=True)
 
 class AccountDb(Base):
 	__tablename__ = "accounts"

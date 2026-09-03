@@ -8,7 +8,6 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from ....schemas.auth import AppResetPasswordRequest, CheckUserResponse, GoogleAuthRequest, GoogleAuthResponse, HTMLResponse, UpdateProfile, UpdateProfileResponse, VersionUpdate
-from ....services.account_setup import ACCOUNT_SETUP
 from ....schemas import  User, Token,SignupRequest,SignupResponse,ResetPasswordRequest,CountryListResponse,BaseResponseSchema
 from ....api import deps
 from .....core import AppSettings
@@ -29,7 +28,7 @@ def get_access_token(
         raise HTTPException(status_code=400, detail="Inactive user")
     access_token_expires = timedelta(minutes=AppSettings.API.ACCESS_TOKEN_EXPIRE_MINUTES)
    
-    response =SECURITY_SERVICE.create_access_token(user.user_id, access_token_expires)
+    response =SECURITY_SERVICE.create_access_token(user.id, access_token_expires)
     return response
 
 
