@@ -1,16 +1,12 @@
-FROM python:3.12-slim
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
-WORKDIR /app
+COPY . /src
+ 
+WORKDIR /src
+RUN pip install --upgrade pip
+RUN apt-get update
+RUN pip install -r requirements.txt
+EXPOSE 86
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
 
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-ENV PORT=8080
-
-CMD exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT}
