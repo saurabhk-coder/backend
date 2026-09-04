@@ -1,0 +1,68 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+
+metadata:
+  name: backend-api
+
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "12"
+
+    spec:
+      serviceAccountName: 204682657784-compute@developer.gserviceaccount.com
+
+      containers:
+        - image: europe-west1-docker.pkg.dev/fluted-card-507417-a8/cloud-run-source-deploy/saurabhk-coder-backend/backend-git:e0a800dfcd61242e605f9a235738485cdf083bb8
+
+          ports:
+            - containerPort: 8080
+
+          env:
+
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: SECRET_KEY
+                  key: latest
+
+            - name: POSTGRES_SERVER
+              value: "35.232.68.79"
+
+            - name: POSTGRES_PORT
+              value: "5432"
+
+            - name: POSTGRES_USER
+              value: "postgres"
+
+            - name: POSTGRES_DB
+              value: "hrms_db"
+
+            - name: DB_SCHEMA
+              value: "hrms"
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: POSTGRES_PASSWORD
+                  key: latest
+
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 240
+            periodSeconds: 240
+            failureThreshold: 1
+
+      containerConcurrency: 80
+      timeoutSeconds: 300
+
+  traffic:
+    - percent: 100
+      latestRevision: true
