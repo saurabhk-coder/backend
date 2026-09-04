@@ -1,2 +1,12 @@
 __pycache__
-.deta
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+.env
+.git
+.gitignore
+.pytest_cache
+.mypy_cache
+.vscode
