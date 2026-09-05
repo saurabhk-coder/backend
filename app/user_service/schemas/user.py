@@ -36,37 +36,25 @@ class UserListResponse(BaseResponseModel):
 
 
 class User(BaseModel):
-	userId:str
-	
-	isActive:boolean= True
-	username: str
-	email: Optional[str] = Field(
-		None, title="Enter a valid email",max_length=50
-	)
-	firstName: Optional[str]=""
-	lastName: Optional[str]=""
-	countryCode: Optional[str]=""
-	profileImage: Optional[str]=""
-	mobileNumber: Optional[str]=""
-	password: str=""
-	accountId: str=""
-	is_Active:boolean= True
-	doj: Optional[str]=""
-	dob: Optional[str]=""
-	state: Optional[str]=""
-	organisation: Optional[str]=""
-	designation: Optional[str]=""
-	about : Optional[str]=""
-	appVersion : Optional[str]=""
-	creditPoints:Optional[int]=0
-	subscriptionTypeId:Optional[int]=1
+	userId:str=""
+	organizationId:str=""
+	roleId:str=""
+	email:str=""
+	firstName:str=""
+	lastName:Optional[str]=""
+	countryCode:Optional[str]=""
+	status:Optional[str]=""
 	
 	model_config = ConfigDict(from_attributes=True)
 
 class Current_user(User):
-	accountId:str=""
-	containerName:Optional[str]=""
-	profileImage:Optional[str]=""
+	organizationId:str=""
+	roleId:str=""
+	email:str=""
+	firstName:str=""
+	lastName:Optional[str]=""
+	countryCode:Optional[str]=""
+	status:Optional[str]=""
 
 class UserDetails(User):
 	pass

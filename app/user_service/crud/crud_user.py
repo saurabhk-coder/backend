@@ -25,7 +25,7 @@ class CRUDUser():
 		return db.query(UserDb).filter((UserDb.apple_id).ilike(appleId)).first()
 	
 	def get_user_byid(self, db: Session, *, id: int) -> Optional[UserDb]:
-		return db.query(UserDb).filter((UserDb.user_id == id)).first()
+		return db.query(UserDb).filter((UserDb.id == id)).first()
 	
 	def get_user_me(self, db: Session, *, id: int) -> Optional[UserDb]:
 		return db.query(UserDb).filter((UserDb.username == id)).first()

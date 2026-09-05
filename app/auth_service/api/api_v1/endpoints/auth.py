@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm,HTTPBearer
 from datetime import timedelta
 from sqlalchemy.orm import Session
 
-from ....schemas.auth import AppResetPasswordRequest, CheckUserResponse, GoogleAuthRequest, GoogleAuthResponse, HTMLResponse, UpdateProfile, UpdateProfileResponse, VersionUpdate
+from ....schemas.auth import  CheckUserResponse, GoogleAuthRequest, GoogleAuthResponse, HTMLResponse, UpdateProfile, UpdateProfileResponse, VersionUpdate
 from ....schemas import  User, Token,SignupRequest,SignupResponse,ResetPasswordRequest,CountryListResponse,BaseResponseSchema
 from ....api import deps
 from .....core import AppSettings
@@ -153,17 +153,6 @@ def reset_password(
         raise HTTPException(status_code=404, detail="Password not update")
     return response
 
-@auth.put("/app/reset/Password", response_model=BaseResponseSchema)
-def app_reset_password(
-    *,
-    db: Session = Depends(deps.get_db),
-    request: AppResetPasswordRequest, 
-) -> BaseResponseSchema:
-    
-    response=AUTH_SERVICE.app_reset_password(db,request)
-    if not response:
-        raise HTTPException(status_code=404, detail="Password not update")
-    return response
 
 @auth.get("/country", response_model=CountryListResponse)
 def get_country_list(

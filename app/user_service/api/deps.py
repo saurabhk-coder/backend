@@ -42,25 +42,15 @@ def get_current_user(
                 raise HTTPException(status_code=404, detail="User not found")
         else:
             response = User
-            response.userId = str(user.user_id)
-            response.username = user.username
+            response.userId = str(user.id)
+            response.organizationId = str(user.organization_id)
+            response.roleId = str(user.role_id)
             response.firstName = user.first_name
             response.lastName = user.last_name
             response.email = user.email
             response.countryCode = user.country_code
             response.isActive = user.is_active
-            response.accountId = str(user.account_id)
-            response.containerName = user.container_name
-            response.mobileNumber = user.mobile_number
-            response.doj = user.doj
-            response.dob = user.dob
-            response.designation = user.designation
-            response.about = user.about
-            response.organisation = user.organisation
-            response.state = user.state
-            response.profileImage = user.profile_image
-            response.creditPoints = user.credit_points
-            response.appVersion = user.app_version
+            response.status = user.status
             return response
 
 

@@ -209,12 +209,6 @@ class VersionUpdate(BaseModel):
     appVersion: str = ""
 
 
-class AppResetPasswordRequest(BaseModel):
-    username: str = ""
-    password: str = ""
-    otp: int = 0
-
-
 class Country(BaseModel):
     countryCode: str
     countryName: str
