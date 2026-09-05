@@ -41,9 +41,7 @@ class IAuthService(ABC):
     def reset_token(db:Session,request:VersionUpdate) ->BaseResponseSchema:
        pass
 
-    @abstractmethod
-    def app_reset_password(db:Session,request:AppResetPasswordRequest) ->User:
-       pass
+    
 
     @abstractmethod
     def get_country_list(db:Session) ->CountryListResponse:
@@ -226,18 +224,6 @@ class AuthService(IAuthService):
         
         return user
     
-    def app_reset_password(self,db:Session,request:AppResetPasswordRequest)->BaseResponseSchema:
-        passwordSalt= request.password
-        check_otp = CRUD_USER.check_otp(db,request.username,request.otp)
-        if check_otp==True:
-            user = CRUD_USER.update_app_password(db, passwordSalt,request.username)
-            response = BaseResponseSchema
-            response.message = "Password has been Updated"
-        else:
-            response = BaseResponseSchema
-            response.message = "Otp doesn't matched"
-        
-        return response
     
     def ResetFormManager(self, db: Session, token: str)->HTMLResponse:
         user_dict = SecurityService().decodeJWT(token)
