@@ -29,19 +29,32 @@ class DBSettings(BaseSettings):
         if isinstance(value, str) and value:
             return value
 
-        server = info.data.get("POSTGRES_SERVER")
         user = info.data.get("POSTGRES_USER")
         password = info.data.get("POSTGRES_PASSWORD")
         database = info.data.get("POSTGRES_DB")
+        instance_connection_name = info.data.get("INSTANCE_CONNECTION_NAME")
 
-        if not all([server, user, password, database]):
+        if not all([user, password, database]):
+            return None
+
+        # Cloud Run + Cloud SQL Unix socket
+        if instance_connection_name:
+            return (
+                f"postgresql+psycopg2://"
+                f"{user}:{password}@/{database}"
+                f"?host=/cloudsql/{instance_connection_name}"
+            )
+
+        # Local/development connection
+        server = info.data.get("POSTGRES_SERVER")
+
+        if not server:
             return None
 
         return (
             f"postgresql+psycopg2://"
             f"{user}:{password}@{server}/{database}"
         )
-
 
 class SMTPSettings(BaseSettings):
     SMTP_TLS: bool = True
