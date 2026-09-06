@@ -15,6 +15,7 @@ class DBSettings(BaseSettings):
     POSTGRES_USER: Optional[str] = None
     POSTGRES_PASSWORD: Optional[str] = None
     POSTGRES_DB: Optional[str] = None
+    INSTANCE_CONNECTION_NAME: Optional[str] = None
 
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
