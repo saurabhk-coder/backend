@@ -7,6 +7,11 @@ from app.user_service.api.api_v1.endpoints import  users as api_users
 from app.role_service.api.api_v1.endpoints import roles as api_roles
 from app.organization_service.api.api_v1.endpoints import organizations as api_organizations
 from app.organization_service.api.api_v1.endpoints import organization_settings as api_org_settings
+from app.employee_service.api.api_v1.endpoints import (
+    employee_personal_information_router as api_employee_personal_info,
+    employee_department_information_router as api_employee_dept_info,
+    employee_account_details_router as api_employee_account_details,
+)
 from app.core import AppSettings
 from app.auth_service.services.securityservice import SECURITY_SERVICE
 
@@ -28,6 +33,9 @@ def get_application() -> FastAPI:
     add_role_routes(application)
     add_organization_routes(application)
     add_organization_settings_routes(application)
+    add_employee_personal_information_routes(application)
+    add_employee_department_information_routes(application)
+    add_employee_account_details_routes(application)
    
 
     application.router.route_class = ValidationErrorLoggingRoute
@@ -69,6 +77,18 @@ def add_organization_routes(application:FastAPI):
 def add_organization_settings_routes(application:FastAPI):
     application.include_router(api_org_settings.organization_settings, prefix='/api/v1', tags=['Organization Settings'])
     application.include_router(api_org_settings.organization_settings, tags=['Organization Settings'])
+    return application 
+
+def add_employee_personal_information_routes(application:FastAPI):
+    application.include_router(api_employee_personal_info, prefix='/api/v1', tags=['Employee Personal Information'])
+    return application 
+
+def add_employee_department_information_routes(application:FastAPI):
+    application.include_router(api_employee_dept_info, prefix='/api/v1', tags=['Employee Department Information'])
+    return application 
+
+def add_employee_account_details_routes(application:FastAPI):
+    application.include_router(api_employee_account_details, prefix='/api/v1', tags=['Employee Account Details'])
     return application 
 
 
