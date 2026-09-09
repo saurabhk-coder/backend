@@ -1,9 +1,11 @@
+import uuid
 from datetime import date, datetime
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class EmployeePersonalInformationBase(BaseModel):
+    organization_id: Optional[uuid.UUID] = Field(None, description="Organization ID foreign key reference")
     profile_photo: Optional[str] = Field(None, description="Profile photo URL or base64 string")
     first_name: str = Field(..., min_length=1, max_length=100, description="First name")
     last_name: Optional[str] = Field(None, max_length=100, description="Last name")
@@ -32,6 +34,7 @@ class EmployeePersonalInformationCreate(EmployeePersonalInformationBase):
 
 
 class EmployeePersonalInformationUpdate(BaseModel):
+    organization_id: Optional[uuid.UUID] = Field(None, description="Organization ID")
     profile_photo: Optional[str] = Field(None, description="Profile photo URL or base64 string")
     first_name: Optional[str] = Field(None, min_length=1, max_length=100, description="First name")
     last_name: Optional[str] = Field(None, max_length=100, description="Last name")

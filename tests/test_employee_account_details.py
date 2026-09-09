@@ -28,8 +28,8 @@ class TestEmployeeAccountDetailsEndpoints(unittest.TestCase):
             autocommit=False, autoflush=False, bind=cls.engine
         )
 
-        EmployeeDb.__table__.schema = None
-        EmployeeAccountDetailsDb.__table__.schema = None
+        for table in Base.metadata.tables.values():
+            table.schema = None
         Base.metadata.create_all(bind=cls.engine)
 
         cls.app = FastAPI(title="Employee Account Details Test App")

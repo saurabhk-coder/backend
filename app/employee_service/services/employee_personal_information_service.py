@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import math
+import uuid
 from typing import Any, Dict, Optional, Union
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -33,6 +34,18 @@ class IEmployeePersonalInformationService(ABC):
     def get_multi(
         self,
         db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        search: Optional[str] = None,
+        organization_id: Optional[Union[uuid.UUID, str]] = None,
+    ) -> EmployeePersonalInformationListResponse:
+        pass
+
+    @abstractmethod
+    def get_by_organization_id(
+        self,
+        db: Session,
+        organization_id: Union[uuid.UUID, str],
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None,
@@ -94,11 +107,14 @@ class EmployeePersonalInformationService(IEmployeePersonalInformationService):
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None,
+        organization_id: Optional[Union[uuid.UUID, str]] = None,
     ) -> EmployeePersonalInformationListResponse:
         items = CRUD_EMPLOYEE_PERSONAL_INFORMATION.get_multi(
-            db, skip=skip, limit=limit, search=search
+            db, skip=skip, limit=limit, search=search, organization_id=organization_id
         )
-        total = CRUD_EMPLOYEE_PERSONAL_INFORMATION.count(db, search=search)
+        total = CRUD_EMPLOYEE_PERSONAL_INFORMATION.count(
+            db, search=search, organization_id=organization_id
+        )
         page = (skip // limit) + 1 if limit > 0 else 1
         total_pages = max(1, math.ceil(total / limit)) if limit > 0 else 1
 
@@ -108,6 +124,18 @@ class EmployeePersonalInformationService(IEmployeePersonalInformationService):
             page=page,
             page_size=limit,
             total_pages=total_pages,
+        )
+
+    def get_by_organization_id(
+        self,
+        db: Session,
+        organization_id: Union[uuid.UUID, str],
+        skip: int = 0,
+        limit: int = 100,
+        search: Optional[str] = None,
+    ) -> EmployeePersonalInformationListResponse:
+        return self.get_multi(
+            db, skip=skip, limit=limit, search=search, organization_id=organization_id
         )
 
     def update(

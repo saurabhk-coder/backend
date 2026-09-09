@@ -7,6 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
     Text,
+    Uuid,
     func,
 )
 from sqlalchemy.orm import relationship
@@ -22,6 +23,11 @@ class EmployeePersonalInformationDb(Base):
         ForeignKey("hrms.employees.id", ondelete="CASCADE"),
         primary_key=True,
         nullable=False,
+    )
+    organization_id = Column(
+        Uuid(as_uuid=True),
+        nullable=True,
+        index=True,
     )
     profile_photo = Column(Text, nullable=True)
     first_name = Column(String(100), nullable=False)

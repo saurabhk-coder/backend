@@ -1,7 +1,9 @@
 import unittest
+import uuid
 from datetime import date
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -15,6 +17,7 @@ from app.employee_service.api.deps import get_db
 from app.employee_service.api.api_v1.endpoints.employee_personal_information import (
     employee_personal_information_router,
 )
+from app.user_service.models.user import UsersDb
 
 
 class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
@@ -29,9 +32,12 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
             autocommit=False, autoflush=False, bind=cls.engine
         )
 
-        EmployeeDb.__table__.schema = None
-        EmployeePersonalInformationDb.__table__.schema = None
+        for table in Base.metadata.tables.values():
+            table.schema = None
         Base.metadata.create_all(bind=cls.engine)
+
+        UsersDb.__table__.schema = None
+        UsersDb.metadata.create_all(bind=cls.engine)
 
         cls.app = FastAPI(title="Employee Personal Info Test App")
         cls.app.include_router(
@@ -61,10 +67,11 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
             db.close()
 
     def setUp(self):
-        # Clean personal info table before each test
+        # Clean personal info table and users table before each test
         db = self.TestingSessionLocal()
         try:
             db.query(EmployeePersonalInformationDb).delete()
+            db.query(UsersDb).delete()
             db.commit()
         finally:
             db.close()
@@ -260,6 +267,111 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
         self.assertEqual(del_res.status_code, 200)
         self.assertTrue(del_res.json()["success"])
 
+    def test_create_personal_info_with_organization_id_and_auto_user_creation(self):
+        org_id = str(uuid.uuid4())
+        payload = {
+            "employee_id": 101,
+            "organization_id": org_id,
+            "first_name": "Sarah",
+            "last_name": "Connor",
+            "email": "sarah.connor@example.com",
+            "city": "Los Angeles",
+        }
+        res = self.client.post("/api/v1/employee-personal-information", json=payload)
+        self.assertEqual(res.status_code, 201)
+        data = res.json()
+        self.assertEqual(data["employee_id"], 101)
+        self.assertEqual(data["organization_id"], org_id)
+        self.assertEqual(data["first_name"], "Sarah")
+
+        # Verify automatic creation in users table
+        db = self.TestingSessionLocal()
+        try:
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            user = db.query(UsersDb).filter(UsersDb.email == "sarah.connor@example.com").first()
+            self.assertIsNotNone(user)
+            self.assertEqual(user.first_name, "Sarah")
+            self.assertEqual(user.last_name, "Connor")
+            self.assertEqual(str(user.organization_id), org_id)
+            self.assertEqual(user.status, "inactive")
+            # Verify password is "user"
+            self.assertTrue(pwd_context.verify("user", user.password_hash))
+        finally:
+            db.close()
+
+    def test_filter_by_organization_id(self):
+        org_a = str(uuid.uuid4())
+        org_b = str(uuid.uuid4())
+
+        # Org A employees
+        self.client.post(
+            "/api/v1/employee-personal-information",
+            json={"employee_id": 101, "first_name": "Alice", "organization_id": org_a},
+        )
+        self.client.post(
+            "/api/v1/employee-personal-information",
+            json={"employee_id": 102, "first_name": "Bob", "organization_id": org_a},
+        )
+        # Org B employee
+        self.client.post(
+            "/api/v1/employee-personal-information",
+            json={"employee_id": 103, "first_name": "Charlie", "organization_id": org_b},
+        )
+
+        # 1. Filter via query parameter on /employee-personal-information
+        res_a = self.client.get(f"/api/v1/employee-personal-information?organization_id={org_a}")
+        self.assertEqual(res_a.status_code, 200)
+        data_a = res_a.json()
+        self.assertEqual(data_a["total"], 2)
+        names_a = [item["first_name"] for item in data_a["items"]]
+        self.assertIn("Alice", names_a)
+        self.assertIn("Bob", names_a)
+
+        # 2. Filter via /organizations/{organization_id}/employee-personal-information
+        res_a_endpoint = self.client.get(f"/api/v1/organizations/{org_a}/employee-personal-information")
+        self.assertEqual(res_a_endpoint.status_code, 200)
+        self.assertEqual(res_a_endpoint.json()["total"], 2)
+
+        # 3. Filter Org B via /employee-personal-information/organization/{organization_id}
+        res_b = self.client.get(f"/api/v1/employee-personal-information/organization/{org_b}")
+        self.assertEqual(res_b.status_code, 200)
+        data_b = res_b.json()
+        self.assertEqual(data_b["total"], 1)
+        self.assertEqual(data_b["items"][0]["first_name"], "Charlie")
+
+    def test_update_personal_info_organization_id(self):
+        org_1 = str(uuid.uuid4())
+        org_2 = str(uuid.uuid4())
+
+        post_res = self.client.post(
+            "/api/v1/employee-personal-information",
+            json={
+                "employee_id": 104,
+                "first_name": "David",
+                "email": "david@example.com",
+                "organization_id": org_1,
+            },
+        )
+        self.assertEqual(post_res.status_code, 201)
+
+        # Patch organization_id to org_2
+        patch_res = self.client.patch(
+            "/api/v1/employee-personal-information/104",
+            json={"organization_id": org_2},
+        )
+        self.assertEqual(patch_res.status_code, 200)
+        self.assertEqual(patch_res.json()["organization_id"], org_2)
+
+        # Verify user record is also synced with new organization_id
+        db = self.TestingSessionLocal()
+        try:
+            user = db.query(UsersDb).filter(UsersDb.email == "david@example.com").first()
+            self.assertIsNotNone(user)
+            self.assertEqual(str(user.organization_id), org_2)
+        finally:
+            db.close()
+
 
 if __name__ == "__main__":
     unittest.main()
+

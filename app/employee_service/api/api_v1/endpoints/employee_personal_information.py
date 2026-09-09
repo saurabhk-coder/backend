@@ -46,12 +46,13 @@ def list_personal_information(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(10, ge=1, le=1000, description="Max number of records to return"),
     search: Optional[str] = Query(None, description="Search query by name, email, phone, city, etc."),
+    organization_id: Optional[str] = Query(None, description="Filter by organization ID"),
 ) -> EmployeePersonalInformationListResponse:
     """
     Retrieve paginated employee personal information records with optional search filter.
     """
     return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.get_multi(
-        db, skip=skip, limit=limit, search=search
+        db, skip=skip, limit=limit, search=search, organization_id=organization_id
     )
 
 
@@ -208,3 +209,50 @@ def delete_nested_personal_information(
     employee_id: int,
 ) -> EmployeePersonalInformationDeleteResponse:
     return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.delete(db, employee_id=employee_id)
+
+
+# ============================================================================
+# Routes for organization employee personal information
+# ============================================================================
+
+@employee_personal_information_router.get(
+    "/organizations/{organization_id}/employee-personal-information",
+    response_model=EmployeePersonalInformationListResponse,
+    summary="List employee personal information by organization ID",
+)
+def list_organization_personal_information(
+    *,
+    db: Session = Depends(get_db),
+    organization_id: str,
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(10, ge=1, le=1000, description="Max number of records to return"),
+    search: Optional[str] = Query(None, description="Search query by name, email, phone, city, etc."),
+) -> EmployeePersonalInformationListResponse:
+    """
+    Retrieve paginated employee personal information records belonging to a specific organization.
+    """
+    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.get_by_organization_id(
+        db, organization_id=organization_id, skip=skip, limit=limit, search=search
+    )
+
+
+@employee_personal_information_router.get(
+    "/employee-personal-information/organization/{organization_id}",
+    response_model=EmployeePersonalInformationListResponse,
+    summary="List employee personal information by organization ID (alt route)",
+)
+def list_employee_personal_information_by_organization(
+    *,
+    db: Session = Depends(get_db),
+    organization_id: str,
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(10, ge=1, le=1000, description="Max number of records to return"),
+    search: Optional[str] = Query(None, description="Search query by name, email, phone, city, etc."),
+) -> EmployeePersonalInformationListResponse:
+    """
+    Retrieve paginated employee personal information records belonging to a specific organization.
+    """
+    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.get_by_organization_id(
+        db, organization_id=organization_id, skip=skip, limit=limit, search=search
+    )
+
