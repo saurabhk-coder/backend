@@ -1,3 +1,4 @@
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Union
@@ -12,6 +13,7 @@ from ..schemas.employee_personal_information import (
 )
 from app.user_service.models.user import UsersDb
 
+logger = logging.getLogger(__name__)
 PWD_CONTEXT = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -102,6 +104,69 @@ class CRUDEmployeePersonalInformation:
             )
         return query.scalar() or 0
 
+    def _sync_user(
+        self,
+        db: Session,
+        *,
+        employee_id: int,
+        email: Optional[str],
+        first_name: Optional[str],
+        last_name: Optional[str],
+        organization_id: Optional[Union[uuid.UUID, str]],
+        now: datetime,
+    ) -> Optional[UsersDb]:
+        user_email = (
+            email.strip().lower()
+            if (email and email.strip())
+            else f"emp_{employee_id}@placeholder.local"
+        )
+        existing_user = (
+            db.query(UsersDb)
+            .filter(func.lower(UsersDb.email) == func.lower(user_email))
+            .first()
+        )
+        org_uuid = _to_uuid(organization_id) if organization_id else None
+        if org_uuid:
+            try:
+                from app.organization_service.models.organization import OrganizationDb
+                org_exists = db.query(OrganizationDb.id).filter(OrganizationDb.id == org_uuid).first()
+                if not org_exists:
+                    org_uuid = None
+            except Exception:
+                pass
+        hashed_password = PWD_CONTEXT.hash("admin")
+
+        if not existing_user:
+            new_user = UsersDb(
+                id=uuid.uuid4(),
+                organization_id=org_uuid,
+                email=user_email,
+                password_salt=hashed_password,
+                first_name=first_name,
+                last_name=last_name,
+                country_code="US",
+                status="inactive",
+                is_active=False,
+                created_at=now,
+                updated_at=now,
+            )
+            db.add(new_user)
+            return new_user
+        else:
+            if org_uuid:
+                existing_user.organization_id = org_uuid
+            if first_name:
+                existing_user.first_name = first_name
+            if last_name:
+                existing_user.last_name = last_name
+            existing_user.status = "inactive"
+            existing_user.is_active = False
+            if not existing_user.password_salt:
+                existing_user.password_salt = hashed_password
+            existing_user.updated_at = now
+            db.add(existing_user)
+            return existing_user
+
     def create(
         self, db: Session, *, obj_in: EmployeePersonalInformationCreate
     ) -> EmployeePersonalInformationDb:
@@ -118,46 +183,20 @@ class CRUDEmployeePersonalInformation:
         db.add(db_obj)
 
         # Automatically insert or sync into UsersDb (hrms.users)
-        # Status is inactive and password is user
+        # Status is inactive and password is admin
         try:
-            user_email = (
-                obj_in.email.strip().lower()
-                if (obj_in.email and obj_in.email.strip())
-                else f"emp_{obj_in.employee_id}@placeholder.local"
-            )
-            existing_user = (
-                db.query(UsersDb)
-                .filter(func.lower(UsersDb.email) == func.lower(user_email))
-                .first()
-            )
-            org_uuid = _to_uuid(obj_in.organization_id) if obj_in.organization_id else None
-            if not existing_user:
-                hashed_password = PWD_CONTEXT.hash("user")
-                new_user = UsersDb(
-                    id=uuid.uuid4(),
-                    organization_id=org_uuid,
-                    email=user_email,
-                    password_hash=hashed_password,
+            with db.begin_nested():
+                self._sync_user(
+                    db,
+                    employee_id=obj_in.employee_id,
+                    email=obj_in.email,
                     first_name=obj_in.first_name,
                     last_name=obj_in.last_name,
-                    country_code="US",
-                    status="inactive",
-                    created_at=now.isoformat(),
-                    updated_at=now.isoformat(),
+                    organization_id=obj_in.organization_id,
+                    now=now,
                 )
-                db.add(new_user)
-            else:
-                if org_uuid:
-                    existing_user.organization_id = org_uuid
-                if obj_in.first_name:
-                    existing_user.first_name = obj_in.first_name
-                if obj_in.last_name:
-                    existing_user.last_name = obj_in.last_name
-                existing_user.status = "inactive"
-                existing_user.updated_at = now.isoformat()
-                db.add(existing_user)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.exception("Failed to sync user in users table during employee creation: %s", exc)
 
         db.commit()
         db.refresh(db_obj)
@@ -184,25 +223,21 @@ class CRUDEmployeePersonalInformation:
         db_obj.updated_at = datetime.now(timezone.utc)
         db.add(db_obj)
 
-        # If organization_id or name changed, sync user record if exists
+        # Automatically insert or sync into UsersDb (hrms.users)
+        # Status is inactive and password is admin
         try:
-            if db_obj.email:
-                user = (
-                    db.query(UsersDb)
-                    .filter(func.lower(UsersDb.email) == func.lower(db_obj.email.strip()))
-                    .first()
+            with db.begin_nested():
+                self._sync_user(
+                    db,
+                    employee_id=db_obj.employee_id,
+                    email=db_obj.email,
+                    first_name=db_obj.first_name,
+                    last_name=db_obj.last_name,
+                    organization_id=db_obj.organization_id,
+                    now=db_obj.updated_at,
                 )
-                if user:
-                    if db_obj.organization_id:
-                        user.organization_id = _to_uuid(db_obj.organization_id)
-                    if db_obj.first_name:
-                        user.first_name = db_obj.first_name
-                    if db_obj.last_name:
-                        user.last_name = db_obj.last_name
-                    user.updated_at = datetime.now(timezone.utc).isoformat()
-                    db.add(user)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.exception("Failed to sync user in users table during employee update: %s", exc)
 
         db.commit()
         db.refresh(db_obj)

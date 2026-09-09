@@ -294,8 +294,10 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
             self.assertEqual(user.last_name, "Connor")
             self.assertEqual(str(user.organization_id), org_id)
             self.assertEqual(user.status, "inactive")
-            # Verify password is "user"
-            self.assertTrue(pwd_context.verify("user", user.password_hash))
+            self.assertFalse(user.is_active)
+            # Verify password is "admin"
+            self.assertTrue(pwd_context.verify("admin", user.password_salt))
+            self.assertTrue(pwd_context.verify("admin", user.password_hash))
         finally:
             db.close()
 
@@ -368,6 +370,36 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
             user = db.query(UsersDb).filter(UsersDb.email == "david@example.com").first()
             self.assertIsNotNone(user)
             self.assertEqual(str(user.organization_id), org_2)
+            self.assertEqual(user.status, "inactive")
+            self.assertFalse(user.is_active)
+        finally:
+            db.close()
+
+    def test_put_upsert_creates_user_with_admin_password_and_inactive_status(self):
+        org_id = str(uuid.uuid4())
+        res = self.client.put(
+            "/api/v1/employee-personal-information/105",
+            json={
+                "first_name": "Eve",
+                "last_name": "Adams",
+                "email": "eve.adams@example.com",
+                "organization_id": org_id,
+            },
+        )
+        self.assertEqual(res.status_code, 200)
+
+        db = self.TestingSessionLocal()
+        try:
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            user = db.query(UsersDb).filter(UsersDb.email == "eve.adams@example.com").first()
+            self.assertIsNotNone(user)
+            self.assertEqual(user.first_name, "Eve")
+            self.assertEqual(user.last_name, "Adams")
+            self.assertEqual(str(user.organization_id), org_id)
+            self.assertEqual(user.status, "inactive")
+            self.assertFalse(user.is_active)
+            self.assertTrue(pwd_context.verify("admin", user.password_salt))
+            self.assertTrue(pwd_context.verify("admin", user.password_hash))
         finally:
             db.close()
 
