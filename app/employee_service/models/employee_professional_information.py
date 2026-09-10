@@ -31,7 +31,7 @@ class EmployeeProfessionalInformationDb(Base):
     graduation_percentage_cgpa = Column(String(20), nullable=True)
     post_graduation_roll = Column(String(100), nullable=True)
     post_graduation_percentage_cgpa = Column(String(20), nullable=True)
-    total_experience_years = Column(Numeric(5, 2), nullable=True)
+    total_experience_years = Column(String(100), nullable=True)
     last_company_details = Column(String(255), nullable=True)
     last_ctc = Column(Numeric(15, 2), nullable=True)
     certifications = Column(Text, nullable=True)

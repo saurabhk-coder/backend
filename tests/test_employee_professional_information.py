@@ -79,7 +79,7 @@ class TestEmployeeProfessionalInformationEndpoints(unittest.TestCase):
             "graduation_percentage_cgpa": "8.5 CGPA",
             "post_graduation_roll": "MTECH-789",
             "post_graduation_percentage_cgpa": "8.9 CGPA",
-            "total_experience_years": 4.5,
+            "total_experience_years": "4.5",
             "last_company_details": "Tech Solutions Inc, Senior Developer",
             "last_ctc": 1200000.00,
             "certifications": "AWS Certified Solutions Architect, CKA",
