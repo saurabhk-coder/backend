@@ -24,6 +24,7 @@ class EmployeeAccountDetailsDb(Base):
     bank_name = Column(String(150), nullable=True)
     ifsc_code = Column(String(20), nullable=True)
     account_number = Column(String(50), nullable=True)
+    branch_name = Column(String(50), nullable=True)
 
     created_at = Column(
         DateTime(timezone=True),

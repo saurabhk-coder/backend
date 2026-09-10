@@ -7,6 +7,7 @@ class EmployeeAccountDetailsBase(BaseModel):
     bank_name: Optional[str] = Field(None, max_length=150, description="Name of the bank")
     ifsc_code: Optional[str] = Field(None, max_length=20, description="Bank IFSC / routing code")
     account_number: Optional[str] = Field(None, max_length=50, description="Bank account number")
+    branch_name: Optional[str] = Field(None, max_length=50, description="Bank account number")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -19,6 +20,7 @@ class EmployeeAccountDetailsUpdate(BaseModel):
     bank_name: Optional[str] = Field(None, max_length=150, description="Name of the bank")
     ifsc_code: Optional[str] = Field(None, max_length=20, description="Bank IFSC / routing code")
     account_number: Optional[str] = Field(None, max_length=50, description="Bank account number")
+    branch_name: Optional[str] = Field(None, max_length=50, description="Bank branch Name")
 
     model_config = ConfigDict(from_attributes=True)
 
