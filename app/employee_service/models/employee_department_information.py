@@ -13,12 +13,12 @@ from ..db.base_class import Base
 
 
 class EmployeeDepartmentInformationDb(Base):
-    __tablename__ = "employee_department_information"
+    __tablename__ = "department"
     __table_args__ = {"schema": "hrms", "extend_existing": True}
 
     employee_id = Column(
         BigInteger,
-        ForeignKey("hrms.employees.id", ondelete="CASCADE"),
+        ForeignKey("hrms.employee_professional_information.employee_id", ondelete="CASCADE"),
         primary_key=True,
         nullable=False,
     )
@@ -26,7 +26,7 @@ class EmployeeDepartmentInformationDb(Base):
     designation = Column(String(150), nullable=True)
     reporting_manager_id = Column(
         BigInteger,
-        ForeignKey("hrms.employees.id", ondelete="SET NULL"),
+        ForeignKey("hrms.employee_professional_information.employee_id", ondelete="SET NULL"),
         nullable=True,
     )
     work_location = Column(String(150), nullable=True)
