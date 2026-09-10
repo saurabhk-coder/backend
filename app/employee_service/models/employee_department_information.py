@@ -13,22 +13,17 @@ from ..db.base_class import Base
 
 
 class EmployeeDepartmentInformationDb(Base):
-    __tablename__ = "department"
+    __tablename__ = "departments"
     __table_args__ = {"schema": "hrms", "extend_existing": True}
 
     employee_id = Column(
         BigInteger,
-        ForeignKey("hrms.employee_professional_information.employee_id", ondelete="CASCADE"),
         primary_key=True,
         nullable=False,
     )
     department = Column(String(150), nullable=True)
     designation = Column(String(150), nullable=True)
-    reporting_manager_id = Column(
-        BigInteger,
-        ForeignKey("hrms.employee_professional_information.employee_id", ondelete="SET NULL"),
-        nullable=True,
-    )
+    reporting_manager_id =Column(String(50), nullable=True)
     work_location = Column(String(150), nullable=True)
     work_mode = Column(String(50), nullable=True)
     employment_type = Column(String(50), nullable=True)
@@ -48,5 +43,5 @@ class EmployeeDepartmentInformationDb(Base):
         server_default=func.now(),
     )
 
-    employee = relationship("EmployeeDb", backref="department_information", foreign_keys=[employee_id])
-    reporting_manager = relationship("EmployeeDb", foreign_keys=[reporting_manager_id])
+    employee = Column(String(50), nullable=True)
+    reporting_manager = Column(String(50), nullable=True)
