@@ -11,6 +11,7 @@ from app.employee_service.api.api_v1.endpoints import (
     employee_personal_information_router as api_employee_personal_info,
     employee_department_information_router as api_employee_dept_info,
     employee_account_details_router as api_employee_account_details,
+    employee_professional_information_router as api_employee_prof_info,
 )
 from app.core import AppSettings
 from app.auth_service.services.securityservice import SECURITY_SERVICE
@@ -36,6 +37,8 @@ def get_application() -> FastAPI:
     add_employee_personal_information_routes(application)
     add_employee_department_information_routes(application)
     add_employee_account_details_routes(application)
+    add_employee_professional_information_routes(application)
+
    
 
     application.router.route_class = ValidationErrorLoggingRoute
@@ -89,6 +92,10 @@ def add_employee_department_information_routes(application:FastAPI):
 
 def add_employee_account_details_routes(application:FastAPI):
     application.include_router(api_employee_account_details, prefix='/api/v1', tags=['Employee Account Details'])
+    return application 
+
+def add_employee_professional_information_routes(application:FastAPI):
+    application.include_router(api_employee_prof_info, prefix='/api/v1', tags=['Employee Professional Information'])
     return application 
 
 

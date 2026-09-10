@@ -13,6 +13,11 @@ from .employee_account_details_service import (
     IEmployeeAccountDetailsService,
     EMPLOYEE_ACCOUNT_DETAILS_SERVICE,
 )
+from .employee_professional_information_service import (
+    EmployeeProfessionalInformationService,
+    IEmployeeProfessionalInformationService,
+    EMPLOYEE_PROFESSIONAL_INFORMATION_SERVICE,
+)
 
 __all__ = [
     "EmployeePersonalInformationService",
@@ -24,4 +29,8 @@ __all__ = [
     "EmployeeAccountDetailsService",
     "IEmployeeAccountDetailsService",
     "EMPLOYEE_ACCOUNT_DETAILS_SERVICE",
+    "EmployeeProfessionalInformationService",
+    "IEmployeeProfessionalInformationService",
+    "EMPLOYEE_PROFESSIONAL_INFORMATION_SERVICE",
 ]
+

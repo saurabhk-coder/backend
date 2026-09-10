@@ -10,6 +10,10 @@ from .crud_employee_account_details import (
     CRUDEmployeeAccountDetails,
     CRUD_EMPLOYEE_ACCOUNT_DETAILS,
 )
+from .crud_employee_professional_information import (
+    CRUDEmployeeProfessionalInformation,
+    CRUD_EMPLOYEE_PROFESSIONAL_INFORMATION,
+)
 
 __all__ = [
     "CRUDEmployeePersonalInformation",
@@ -18,4 +22,7 @@ __all__ = [
     "CRUD_EMPLOYEE_DEPARTMENT_INFORMATION",
     "CRUDEmployeeAccountDetails",
     "CRUD_EMPLOYEE_ACCOUNT_DETAILS",
+    "CRUDEmployeeProfessionalInformation",
+    "CRUD_EMPLOYEE_PROFESSIONAL_INFORMATION",
 ]
+

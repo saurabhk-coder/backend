@@ -3,6 +3,7 @@ from .models import (
     EmployeePersonalInformationDb,
     EmployeeDepartmentInformationDb,
     EmployeeAccountDetailsDb,
+    EmployeeProfessionalInformationDb,
 )
 from .schemas import (
     EmployeePersonalInformationBase,
@@ -23,6 +24,12 @@ from .schemas import (
     EmployeeAccountDetailsResponse,
     EmployeeAccountDetailsListResponse,
     EmployeeAccountDetailsDeleteResponse,
+    EmployeeProfessionalInformationBase,
+    EmployeeProfessionalInformationCreate,
+    EmployeeProfessionalInformationUpdate,
+    EmployeeProfessionalInformationResponse,
+    EmployeeProfessionalInformationListResponse,
+    EmployeeProfessionalInformationDeleteResponse,
 )
 from .crud import (
     CRUDEmployeePersonalInformation,
@@ -31,6 +38,8 @@ from .crud import (
     CRUD_EMPLOYEE_DEPARTMENT_INFORMATION,
     CRUDEmployeeAccountDetails,
     CRUD_EMPLOYEE_ACCOUNT_DETAILS,
+    CRUDEmployeeProfessionalInformation,
+    CRUD_EMPLOYEE_PROFESSIONAL_INFORMATION,
 )
 from .services import (
     IEmployeePersonalInformationService,
@@ -42,11 +51,15 @@ from .services import (
     IEmployeeAccountDetailsService,
     EmployeeAccountDetailsService,
     EMPLOYEE_ACCOUNT_DETAILS_SERVICE,
+    IEmployeeProfessionalInformationService,
+    EmployeeProfessionalInformationService,
+    EMPLOYEE_PROFESSIONAL_INFORMATION_SERVICE,
 )
 from .api.api_v1.endpoints import (
     employee_personal_information_router,
     employee_department_information_router,
     employee_account_details_router,
+    employee_professional_information_router,
 )
 
 __all__ = [
@@ -55,6 +68,7 @@ __all__ = [
     "EmployeePersonalInformationDb",
     "EmployeeDepartmentInformationDb",
     "EmployeeAccountDetailsDb",
+    "EmployeeProfessionalInformationDb",
     # Schemas
     "EmployeePersonalInformationBase",
     "EmployeePersonalInformationCreate",
@@ -74,6 +88,12 @@ __all__ = [
     "EmployeeAccountDetailsResponse",
     "EmployeeAccountDetailsListResponse",
     "EmployeeAccountDetailsDeleteResponse",
+    "EmployeeProfessionalInformationBase",
+    "EmployeeProfessionalInformationCreate",
+    "EmployeeProfessionalInformationUpdate",
+    "EmployeeProfessionalInformationResponse",
+    "EmployeeProfessionalInformationListResponse",
+    "EmployeeProfessionalInformationDeleteResponse",
     # CRUD
     "CRUDEmployeePersonalInformation",
     "CRUD_EMPLOYEE_PERSONAL_INFORMATION",
@@ -81,6 +101,8 @@ __all__ = [
     "CRUD_EMPLOYEE_DEPARTMENT_INFORMATION",
     "CRUDEmployeeAccountDetails",
     "CRUD_EMPLOYEE_ACCOUNT_DETAILS",
+    "CRUDEmployeeProfessionalInformation",
+    "CRUD_EMPLOYEE_PROFESSIONAL_INFORMATION",
     # Services
     "IEmployeePersonalInformationService",
     "EmployeePersonalInformationService",
@@ -91,8 +113,13 @@ __all__ = [
     "IEmployeeAccountDetailsService",
     "EmployeeAccountDetailsService",
     "EMPLOYEE_ACCOUNT_DETAILS_SERVICE",
+    "IEmployeeProfessionalInformationService",
+    "EmployeeProfessionalInformationService",
+    "EMPLOYEE_PROFESSIONAL_INFORMATION_SERVICE",
     # Routers
     "employee_personal_information_router",
     "employee_department_information_router",
     "employee_account_details_router",
+    "employee_professional_information_router",
 ]
+

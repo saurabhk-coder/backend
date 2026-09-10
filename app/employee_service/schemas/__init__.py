@@ -22,6 +22,14 @@ from .employee_account_details import (
     EmployeeAccountDetailsListResponse,
     EmployeeAccountDetailsDeleteResponse,
 )
+from .employee_professional_information import (
+    EmployeeProfessionalInformationBase,
+    EmployeeProfessionalInformationCreate,
+    EmployeeProfessionalInformationUpdate,
+    EmployeeProfessionalInformationResponse,
+    EmployeeProfessionalInformationListResponse,
+    EmployeeProfessionalInformationDeleteResponse,
+)
 
 __all__ = [
     "EmployeePersonalInformationBase",
@@ -42,4 +50,11 @@ __all__ = [
     "EmployeeAccountDetailsResponse",
     "EmployeeAccountDetailsListResponse",
     "EmployeeAccountDetailsDeleteResponse",
+    "EmployeeProfessionalInformationBase",
+    "EmployeeProfessionalInformationCreate",
+    "EmployeeProfessionalInformationUpdate",
+    "EmployeeProfessionalInformationResponse",
+    "EmployeeProfessionalInformationListResponse",
+    "EmployeeProfessionalInformationDeleteResponse",
 ]
+
