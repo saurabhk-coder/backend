@@ -4,7 +4,7 @@ from ..db.base_class import Base
 
 
 class EmployeeDb(Base):
-    __tablename__ = "employees"
+    __tablename__ = "employee_personal_information"
     __table_args__ = {"schema": "hrms", "extend_existing": True}
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
