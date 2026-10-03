@@ -5,8 +5,12 @@ from app.core.middleware.validation_exception_handler import ValidationErrorLogg
 from app.auth_service.api.api_v1.endpoints import  auth as auth_routes
 from app.user_service.api.api_v1.endpoints import  users as api_users
 from app.role_service.api.api_v1.endpoints import roles as api_roles
-from app.organization_service.api.api_v1.endpoints import organizations as api_organizations
-from app.organization_service.api.api_v1.endpoints import organization_settings as api_org_settings
+from app.organization_service.api.api_v1.endpoints import (
+    organizations as api_organizations,
+    organization_settings as api_org_settings,
+    calendar_settings as api_calendar_settings,
+)
+
 from app.employee_service.api.api_v1.endpoints import (
     employee_personal_information_router as api_employee_personal_info,
     employee_department_information_router as api_employee_dept_info,
@@ -34,7 +38,9 @@ def get_application() -> FastAPI:
     add_role_routes(application)
     add_organization_routes(application)
     add_organization_settings_routes(application)
+    add_calendar_settings_routes(application)
     add_employee_personal_information_routes(application)
+
     add_employee_department_information_routes(application)
     add_employee_account_details_routes(application)
     add_employee_professional_information_routes(application)
@@ -81,6 +87,12 @@ def add_organization_settings_routes(application:FastAPI):
     application.include_router(api_org_settings.organization_settings, prefix='/api/v1', tags=['Organization Settings'])
     application.include_router(api_org_settings.organization_settings, tags=['Organization Settings'])
     return application 
+
+def add_calendar_settings_routes(application:FastAPI):
+    application.include_router(api_calendar_settings.calendar_settings_router, prefix='/api/v1', tags=['Calendar Settings'])
+    application.include_router(api_calendar_settings.calendar_settings_router, tags=['Calendar Settings'])
+    return application 
+ 
 
 def add_employee_personal_information_routes(application:FastAPI):
     application.include_router(api_employee_personal_info, prefix='/api/v1', tags=['Employee Personal Information'])

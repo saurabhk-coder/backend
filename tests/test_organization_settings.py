@@ -29,9 +29,11 @@ class TestOrganizationSettingEndpoints(unittest.TestCase):
             autocommit=False, autoflush=False, bind=cls.engine
         )
 
-        OrganizationDb.__table__.schema = None
-        OrganizationSettingDb.__table__.schema = None
+        # Clear schemas for SQLite in-memory testing
+        for table in Base.metadata.tables.values():
+            table.schema = None
         Base.metadata.create_all(bind=cls.engine)
+
 
         cls.app = FastAPI(title="Organization Settings Test App")
         cls.app.include_router(organization_settings, prefix="/api/v1", tags=["Organization Settings"])

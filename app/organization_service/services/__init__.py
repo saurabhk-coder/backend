@@ -8,6 +8,11 @@ from .organization_setting_service import (
     IOrganizationSettingService,
     OrganizationSettingService,
 )
+from .calendar_setting_service import (
+    CALENDAR_SETTING_SERVICE,
+    ICalendarSettingService,
+    CalendarSettingService,
+)
 
 __all__ = [
     "ORGANIZATION_SERVICE",
@@ -16,4 +21,8 @@ __all__ = [
     "ORGANIZATION_SETTING_SERVICE",
     "IOrganizationSettingService",
     "OrganizationSettingService",
+    "CALENDAR_SETTING_SERVICE",
+    "ICalendarSettingService",
+    "CalendarSettingService",
 ]
+
