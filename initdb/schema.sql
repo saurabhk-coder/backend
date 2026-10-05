@@ -134,9 +134,75 @@ CREATE TABLE IF NOT EXISTS hrms.calendar_weekend_rules (
 CREATE INDEX IF NOT EXISTS idx_calendar_weekend_rules_setting_id ON hrms.calendar_weekend_rules (calendar_setting_id);
 
 -- ============================================================================
--- 7. hrms.employees (Core Employee Record)
+-- 7. hrms.shifts (Shift Policy Configuration)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.shifts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES hrms.organizations(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    shift_duration VARCHAR(10) NOT NULL DEFAULT '09:00',
+    start_date DATE,
+    end_date DATE,
+    people_required VARCHAR(50),
+    color VARCHAR(32) NOT NULL DEFAULT '#F05A28',
+    work_area VARCHAR(255),
+    department VARCHAR(255),
+    location VARCHAR(255),
+    pay_calculation_type VARCHAR(20) NOT NULL DEFAULT 'per_day',
+    full_day_hours VARCHAR(10) NOT NULL DEFAULT '08:00',
+    full_day_tolerance VARCHAR(10) DEFAULT '00:00',
+    half_day_hours VARCHAR(10) NOT NULL DEFAULT '04:00',
+    half_day_tolerance VARCHAR(10) DEFAULT '00:00',
+    recurrence_pattern VARCHAR(20) NOT NULL DEFAULT 'daily',
+    weekly_working_days JSONB NOT NULL DEFAULT '["Mon","Tue","Wed","Thu","Fri"]'::jsonb,
+    calendar_weekend_policy VARCHAR(20) NOT NULL DEFAULT 'calendar',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shifts_org_id ON hrms.shifts (organization_id);
+CREATE INDEX IF NOT EXISTS idx_shifts_name ON hrms.shifts (name);
+CREATE INDEX IF NOT EXISTS idx_shifts_department ON hrms.shifts (department);
+CREATE INDEX IF NOT EXISTS idx_shifts_location ON hrms.shifts (location);
+CREATE INDEX IF NOT EXISTS idx_shifts_is_active ON hrms.shifts (is_active);
+
+-- ============================================================================
+-- 8. hrms.shift_grace_periods (Shift Grace Period Settings)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.shift_grace_periods (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shift_id UUID NOT NULL REFERENCES hrms.shifts(id) ON DELETE CASCADE UNIQUE,
+    is_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    late_check_in_minutes INTEGER NOT NULL DEFAULT 0,
+    early_check_out_minutes INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_shift_grace_periods_shift_id ON hrms.shift_grace_periods (shift_id);
+
+-- ============================================================================
+-- 9. hrms.shift_reminders (Shift Reminder Settings)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.shift_reminders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shift_id UUID NOT NULL REFERENCES hrms.shifts(id) ON DELETE CASCADE UNIQUE,
+    check_in_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    check_in_before VARCHAR(10) DEFAULT '00:00',
+    check_in_after VARCHAR(10) DEFAULT '00:00',
+    check_out_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    check_out_before VARCHAR(10) DEFAULT '00:00',
+    check_out_after VARCHAR(10) DEFAULT '00:00'
+);
+
+CREATE INDEX IF NOT EXISTS idx_shift_reminders_shift_id ON hrms.shift_reminders (shift_id);
+
+-- ============================================================================
+-- 10. hrms.employees (Core Employee Record)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS hrms.employees (
+
     id BIGSERIAL PRIMARY KEY,
     employee_code VARCHAR(50) UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -301,6 +367,13 @@ BEGIN
         BEFORE UPDATE ON hrms.calendar_settings
         FOR EACH ROW EXECUTE FUNCTION hrms.update_timestamp();
     END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_shifts_updated_at') THEN
+        CREATE TRIGGER trg_shifts_updated_at
+        BEFORE UPDATE ON hrms.shifts
+        FOR EACH ROW EXECUTE FUNCTION hrms.update_timestamp();
+    END IF;
+
 
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_org_settings_updated_at') THEN
         CREATE TRIGGER trg_org_settings_updated_at

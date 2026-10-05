@@ -17,6 +17,8 @@ from app.employee_service.api.api_v1.endpoints import (
     employee_account_details_router as api_employee_account_details,
     employee_professional_information_router as api_employee_prof_info,
 )
+from app.shift_service.api.api_v1.endpoints import shifts as api_shifts
+
 from app.core import AppSettings
 from app.auth_service.services.securityservice import SECURITY_SERVICE
 
@@ -39,7 +41,9 @@ def get_application() -> FastAPI:
     add_organization_routes(application)
     add_organization_settings_routes(application)
     add_calendar_settings_routes(application)
+    add_shift_routes(application)
     add_employee_personal_information_routes(application)
+
 
     add_employee_department_information_routes(application)
     add_employee_account_details_routes(application)
@@ -92,6 +96,14 @@ def add_calendar_settings_routes(application:FastAPI):
     application.include_router(api_calendar_settings.calendar_settings_router, prefix='/api/v1', tags=['Calendar Settings'])
     application.include_router(api_calendar_settings.calendar_settings_router, tags=['Calendar Settings'])
     return application 
+
+def add_shift_routes(application:FastAPI):
+    router = getattr(api_shifts, "shifts", api_shifts)
+    application.include_router(router, prefix='/api/v1/shifts', tags=['Shifts'])
+    application.include_router(router, prefix='/shifts', tags=['Shifts'])
+    return application
+
+ 
  
 
 def add_employee_personal_information_routes(application:FastAPI):
