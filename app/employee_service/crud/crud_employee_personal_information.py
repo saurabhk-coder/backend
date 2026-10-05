@@ -145,8 +145,8 @@ class CRUDEmployeePersonalInformation:
                 first_name=first_name,
                 last_name=last_name,
                 country_code="US",
-                status="inactive",
-                is_active=False,
+                status="active",
+                is_active=True,
                 created_at=now,
                 updated_at=now,
             )
@@ -159,8 +159,8 @@ class CRUDEmployeePersonalInformation:
                 existing_user.first_name = first_name
             if last_name:
                 existing_user.last_name = last_name
-            existing_user.status = "inactive"
-            existing_user.is_active = False
+            existing_user.status = "active"
+            existing_user.is_active = True
             if not existing_user.password_salt:
                 existing_user.password_salt = hashed_password
             existing_user.updated_at = now
