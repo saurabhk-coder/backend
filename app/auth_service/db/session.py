@@ -9,7 +9,8 @@ engine = create_engine(
     max_overflow=64,
     connect_args={
         "application_name": "dev_auth_api",
-        "options": "-csearch_path=hrms,public"
+        "options": "-csearch_path=hrms,public",
+        "connect_timeout": 5,
     }
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine,expire_on_commit=False)

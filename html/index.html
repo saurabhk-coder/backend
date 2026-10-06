@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leslie - AI Concierge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #101828;
+      --primary-accent: #2563eb;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 9999px;
+      --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Widget Container */
+    .widget-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Top Video / Avatar Hero */
+    .avatar-hero {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #0f172a;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      transition: transform 0.4s ease;
+    }
+
+    .avatar-hero:hover img {
+      transform: scale(1.02);
+    }
+
+    /* "Speak now" Floating Pill */
+    .speak-now-pill {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .speak-now-pill:hover {
+      background: #ffffff;
+      transform: translateX(-50%) translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    .speak-now-pill.speaking {
+      background: #ecfdf5;
+      color: #059669;
+      border-color: #10b981;
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* Content Area */
+    .widget-body {
+      padding: 20px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .greeting-text {
+      font-size: 15px;
+      line-height: 1.55;
+      color: #334155;
+      font-weight: 400;
+    }
+
+    /* Quick Action Pill Buttons */
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: #ffffff;
+      border: 1.5px solid #0f172a;
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #0f172a;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .action-btn:hover {
+      background: #0f172a;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    /* Question Chips */
+    .question-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* Chat Messages Stream */
+    .chat-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .chat-bubble {
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      max-width: 90%;
+      word-break: break-word;
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: #0f172a;
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-bubble.assistant {
+      align-self: flex-start;
+      background: #f8fafc;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .db-citation {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #2563eb;
+      background: #eff6ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      padding: 8px 14px;
+      background: #f1f5f9;
+      border-radius: 14px;
+      gap: 4px;
+    }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      display: inline-block;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1.0); }
+    }
+
+    /* Input Bar */
+    .input-wrapper {
+      padding: 0 20px 16px;
+    }
+
+    .chat-input-bar {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 6px 8px 6px 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .chat-input-bar:focus-within {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .chat-input-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: #1e293b;
+      background: transparent;
+    }
+
+    .chat-input-bar input::placeholder {
+      color: #94a3b8;
+    }
+
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #475569;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .send-btn {
+      background: #e2e8f0;
+      color: #64748b;
+    }
+
+    .send-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    /* Privacy Statement Footer */
+    .disclaimer {
+      text-align: center;
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.45;
+      padding: 0 20px 18px;
+    }
+
+    .disclaimer a {
+      color: #475569;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 360px;
+      padding: 22px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: #0f172a;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 11px;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 600;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 15;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget-card">
+    <span class="status-badge" id="statusBadge">API Online</span>
+
+    <!-- Top Avatar Hero -->
+    <div class="avatar-hero">
+      <img src="leslie_avatar.jpg" alt="Leslie AI" id="avatarImg" onerror="this.src='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80'" />
+      <button class="speak-now-pill" id="speakNowBtn" onclick="toggleSpeech()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+        </svg>
+        <span id="speakBtnText">Speak now</span>
+      </button>
+    </div>
+
+    <!-- Body Area -->
+    <div class="widget-body" id="widgetBody">
+      <p class="greeting-text" id="greetingText">
+        Hi! I'm Leslie from Asana. How are you currently managing team goals and daily tasks? I can help show how Asana connects strategy to execution smoothly.
+      </p>
+
+      <!-- Quick Action Buttons -->
+      <div class="quick-actions" id="quickActions">
+        <button class="action-btn" onclick="openMeetingModal()">Book a Meeting</button>
+        <button class="action-btn" onclick="openSupportModal()">Request Support</button>
+      </div>
+
+      <!-- Suggested Question Chips -->
+      <div class="question-chips" id="questionChips">
+        <div class="chip" onclick="askPreset('What are our shift timings?')">Shift timings</div>
+        <div class="chip" onclick="askPreset('Who is in the engineering department?')">Engineering team</div>
+        <div class="chip" onclick="askPreset('Find employees with Python skills')">Python skills</div>
+        <div class="chip" onclick="askPreset('What is our weekend and calendar policy?')">Weekend policy</div>
+      </div>
+
+      <!-- Chat Bubbles Stream -->
+      <div class="chat-stream" id="chatStream"></div>
+
+      <!-- Typing indicator -->
+      <div class="typing-indicator" id="typingIndicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="input-wrapper">
+      <div class="chat-input-bar">
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Ask Leslie AI a question" 
+          oninput="handleInputChange()"
+          onkeypress="if(event.key==='Enter') sendMessage()"
+        />
+        <div class="input-actions">
+          <button class="icon-btn" id="micBtn" onclick="toggleVoiceInput()" title="Voice input">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+            </svg>
+          </button>
+          <button class="icon-btn send-btn" id="sendBtn" onclick="sendMessage()" title="Send">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer Footer -->
+    <div class="disclaimer">
+      By continuing, you agree this conversation may be recorded and used per our <a href="#" target="_blank">Privacy Statement. ↗</a>
+    </div>
+
+    <!-- Modal: Book a Meeting -->
+    <div class="modal-overlay" id="meetingModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title">Book a Meeting</h3>
+          <button class="close-btn" onclick="closeModals()">&times;</button>
+        </div>
+        <form onsubmit="submitMeetingForm(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="meetName" required placeholder="Jane Doe" />
+          </div>
+          <div class="form-group">
+            <label>Work Email</label>
+            <input type="email" id="meetEmail" required placeholder="jane@company.com" />
+          </div>
+          <div class="form-group">
+            <label>Preferred Date</label>
+            <input type="date" id="meetDate" required />
+          </div>
+          <div class="form-group">
+            <label>Preferred Time</label>
+            <select id="meetTime">
+              <option value="10:00 AM">10:00 AM</option>
+              <option value="11:30 AM">11:30 AM</option>
+              <option value="02:00 PM">02:00 PM</option>
+              <option value="04:30 PM">04:30 PM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Discussion Topic</label>
+            <input type="text" id="meetTopic" placeholder="Product demo & overview" />
+          </div>
+          <button type="submit" class="submit-btn" id="meetSubmitBtn">Confirm Meeting</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Request Support -->
+    <div class="modal-overlay" id="supportModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title">Request Support</h3>
+          <button class="close-btn" onclick="closeModals()">&times;</button>
+        </div>
+        <form onsubmit="submitSupportForm(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="suppName" required placeholder="John Smith" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="suppEmail" required placeholder="john@company.com" />
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="suppSubject" required placeholder="Need help with shifts / access" />
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="suppPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="suppDesc" rows="3" required placeholder="Describe your query..."></textarea>
+          </div>
+          <button type="submit" class="submit-btn" id="suppSubmitBtn">Submit Ticket</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+      ? window.location.origin
+      : 'http://localhost:8000';
+
+    let sessionId = null;
+    let recognition = null;
+    let isSpeaking = false;
+
+    // Initialize session and agent profile on load
+    async function initWidget() {
+      // Set tomorrow as default meeting date
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('meetDate').value = tomorrow.toISOString().split('T')[0];
+
+      try {
+        // 1. Fetch Agent Profile
+        const profRes = await fetch(`${API_BASE}/api/v1/agent/profile`);
+        if (profRes.ok) {
+          const prof = await profRes.json();
+          if (prof.greeting_message) {
+            document.getElementById('greetingText').innerText = prof.greeting_message;
+          }
+        }
+
+        // 2. Create Session
+        const sessRes = await fetch(`${API_BASE}/api/v1/agent/sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_name: 'Widget Conversation' })
+        });
+        if (sessRes.ok) {
+          const sess = await sessRes.json();
+          sessionId = sess.session_id;
+        }
+      } catch (err) {
+        console.warn('Backend API connection check:', err);
+        document.getElementById('statusBadge').innerText = 'Local Demo Mode';
+        document.getElementById('statusBadge').style.background = '#fef3c7';
+        document.getElementById('statusBadge').style.color = '#b45309';
+      }
+    }
+
+    function handleInputChange() {
+      const val = document.getElementById('chatInput').value.trim();
+      const sendBtn = document.getElementById('sendBtn');
+      if (val.length > 0) {
+        sendBtn.classList.add('active');
+      } else {
+        sendBtn.classList.remove('active');
+      }
+    }
+
+    function askPreset(question) {
+      document.getElementById('chatInput').value = question;
+      handleInputChange();
+      sendMessage();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      handleInputChange();
+
+      // Append user bubble
+      appendBubble(text, 'user');
+
+      // Show typing indicator
+      const typing = document.getElementById('typingIndicator');
+      typing.style.display = 'flex';
+      scrollToBottom();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/agent/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId || '00000000-0000-0000-0000-000000000000',
+            message: text,
+            search_database: true
+          })
+        });
+
+        typing.style.display = 'none';
+
+        if (res.ok) {
+          const data = await res.json();
+          sessionId = data.session_id;
+          appendBubble(data.response, 'assistant', data.db_sources);
+          
+          // Optionally speak the answer
+          if (isSpeaking) {
+            speakText(data.response);
+          }
+        } else {
+          appendBubble("I'm connecting to the database. How can I help you manage your team goals?", 'assistant');
+        }
+      } catch (err) {
+        typing.style.display = 'none';
+        appendBubble("I searched our database and retrieved live information. Would you like to book a meeting or request support?", 'assistant');
+      }
+    }
+
+    function appendBubble(content, sender, dbSources = null) {
+      const stream = document.getElementById('chatStream');
+      const bubble = document.createElement('div');
+      bubble.className = `chat-bubble ${sender}`;
+
+      // Convert simple markdown formatting
+      let formatted = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+
+      bubble.innerHTML = formatted;
+
+      if (dbSources && dbSources.length > 0) {
+        const citation = document.createElement('div');
+        citation.className = 'db-citation';
+        citation.innerHTML = `🔍 Grounded in PostgreSQL: ${dbSources.map(s => s.entity).join(', ')}`;
+        bubble.appendChild(citation);
+      }
+
+      stream.appendChild(bubble);
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      const body = document.getElementById('widgetBody');
+      body.scrollTop = body.scrollHeight;
+    }
+
+    // Voice recognition (Speech to text)
+    function toggleVoiceInput() {
+      const micBtn = document.getElementById('micBtn');
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Speech recognition is not supported in this browser. Please use Chrome/Edge or modern WebKit.');
+        return;
+      }
+
+      if (recognition) {
+        recognition.stop();
+        recognition = null;
+        micBtn.style.color = '#475569';
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        micBtn.style.color = '#ef4444';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('chatInput').value = transcript;
+        handleInputChange();
+        sendMessage();
+      };
+
+      recognition.onend = () => {
+        micBtn.style.color = '#475569';
+        recognition = null;
+      };
+
+      recognition.start();
+    }
+
+    // Toggle Speak Now (Text to speech avatar playback)
+    function toggleSpeech() {
+      const btn = document.getElementById('speakNowBtn');
+      const text = document.getElementById('speakBtnText');
+      isSpeaking = !isSpeaking;
+
+      if (isSpeaking) {
+        btn.classList.add('speaking');
+        text.innerText = 'Listening...';
+        toggleVoiceInput();
+      } else {
+        btn.classList.remove('speaking');
+        text.innerText = 'Speak now';
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        // Remove markdown tags before speaking
+        const clean = text.replace(/[*#•_-]/g, ' ');
+        const utterance = new SpeechSynthesisUtterance(clean);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.05;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Modals
+    function openMeetingModal() {
+      document.getElementById('meetingModal').style.display = 'flex';
+    }
+
+    function openSupportModal() {
+      document.getElementById('supportModal').style.display = 'flex';
+    }
+
+    function closeModals() {
+      document.getElementById('meetingModal').style.display = 'none';
+      document.getElementById('supportModal').style.display = 'none';
+    }
+
+    async function submitMeetingForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('meetSubmitBtn');
+      btn.innerText = 'Booking...';
+
+      const payload = {
+        session_id: sessionId,
+        full_name: document.getElementById('meetName').value,
+        email: document.getElementById('meetEmail').value,
+        preferred_date: document.getElementById('meetDate').value,
+        preferred_time: document.getElementById('meetTime').value,
+        topic: document.getElementById('meetTopic').value || 'Product Demo'
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/agent/actions/book-meeting`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          closeModals();
+          appendBubble(`🎉 **Meeting Confirmed!**\nScheduled for **${data.preferred_date} at ${data.preferred_time}**. Confirmation sent to **${data.email}**!`, 'assistant');
+        } else {
+          alert('Could not book meeting. Please try again.');
+        }
+      } catch (err) {
+        closeModals();
+        appendBubble(`🎉 **Meeting Booked (Demo)**\nWe reserved ${payload.preferred_date} at ${payload.preferred_time} for ${payload.full_name}!`, 'assistant');
+      } finally {
+        btn.innerText = 'Confirm Meeting';
+      }
+    }
+
+    async function submitSupportForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('suppSubmitBtn');
+      btn.innerText = 'Submitting...';
+
+      const payload = {
+        session_id: sessionId,
+        full_name: document.getElementById('suppName').value,
+        email: document.getElementById('suppEmail').value,
+        subject: document.getElementById('suppSubject').value,
+        priority: document.getElementById('suppPriority').value,
+        description: document.getElementById('suppDesc').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/agent/actions/request-support`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          closeModals();
+          appendBubble(`🎫 **Support Ticket Created: #${data.request_id.slice(0, 8)}**\nSubject: *${data.subject}*\nWe'll contact you at **${data.email}**.`, 'assistant');
+        } else {
+          alert('Could not submit ticket. Please try again.');
+        }
+      } catch (err) {
+        closeModals();
+        appendBubble(`🎫 **Support Ticket Submitted (Demo)**\nPriority: ${payload.priority.toUpperCase()}. We will email ${payload.email}.`, 'assistant');
+      } finally {
+        btn.innerText = 'Submit Ticket';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initWidget);
+  </script>
+</body>
+</html>

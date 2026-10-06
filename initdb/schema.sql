@@ -411,3 +411,87 @@ BEGIN
         FOR EACH ROW EXECUTE FUNCTION hrms.update_timestamp();
     END IF;
 END $$;
+
+-- ============================================================================
+-- 14. hrms.ai_agent_sessions (Conversational Sessions for AI Agent)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.ai_agent_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_name VARCHAR(255) NOT NULL DEFAULT 'AI Agent Session',
+    visitor_id VARCHAR(100),
+    metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_agent_sessions_visitor_id ON hrms.ai_agent_sessions (visitor_id);
+
+-- ============================================================================
+-- 15. hrms.ai_agent_messages (Messages within AI Agent Sessions)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.ai_agent_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES hrms.ai_agent_sessions(id) ON DELETE CASCADE,
+    sender_type VARCHAR(20) NOT NULL, -- 'user', 'assistant', 'system'
+    content TEXT NOT NULL,
+    action_type VARCHAR(50) DEFAULT 'chat',
+    metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_agent_messages_session_id ON hrms.ai_agent_messages (session_id);
+
+-- ============================================================================
+-- 16. hrms.ai_agent_meeting_bookings (Meeting Bookings from Widget CTA)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.ai_agent_meeting_bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID REFERENCES hrms.ai_agent_sessions(id) ON DELETE SET NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    preferred_date DATE NOT NULL,
+    preferred_time VARCHAR(50) NOT NULL,
+    topic TEXT,
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_agent_meetings_email ON hrms.ai_agent_meeting_bookings (email);
+
+-- ============================================================================
+-- 17. hrms.ai_agent_support_requests (Support Requests from Widget CTA)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.ai_agent_support_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID REFERENCES hrms.ai_agent_sessions(id) ON DELETE SET NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    priority VARCHAR(20) NOT NULL DEFAULT 'medium',
+    status VARCHAR(30) NOT NULL DEFAULT 'open',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_agent_support_email ON hrms.ai_agent_support_requests (email);
+
+-- ============================================================================
+-- 18. hrms.ai_agent_configs (Agent Persona & Widget Settings)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS hrms.ai_agent_configs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agent_name VARCHAR(100) NOT NULL DEFAULT 'Leslie',
+    agent_title VARCHAR(150) NOT NULL DEFAULT 'AI Product & Support Specialist',
+    company_name VARCHAR(100) NOT NULL DEFAULT 'Aaralia / Asana',
+    avatar_url TEXT,
+    video_url TEXT,
+    greeting_message TEXT NOT NULL DEFAULT 'Hi! I''m Leslie. How are you currently managing team goals and daily tasks? I can help show how our platform connects strategy to execution smoothly.',
+    suggested_questions JSONB NOT NULL DEFAULT '["What are our shift timings?", "Who is available in the engineering department?", "What skills does our team have?", "What is our weekend and calendar policy?"]'::jsonb,
+    quick_actions JSONB NOT NULL DEFAULT '[{"id": "book_meeting", "title": "Book a Meeting", "action": "open_modal"}, {"id": "request_support", "title": "Request Support", "action": "open_modal"}]'::jsonb,
+    system_prompt TEXT DEFAULT 'You are Leslie, an intelligent AI concierge for Aaralia HRMS. You answer user queries accurately by retrieving real data from the database.',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+

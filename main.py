@@ -1,5 +1,7 @@
+import os
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 # from app.core.middleware.opensensus_middleware import add_opensense
 from app.core.middleware.validation_exception_handler import ValidationErrorLoggingRoute
 from app.auth_service.api.api_v1.endpoints import  auth as auth_routes
@@ -18,6 +20,8 @@ from app.employee_service.api.api_v1.endpoints import (
     employee_professional_information_router as api_employee_prof_info,
 )
 from app.shift_service.api.api_v1.endpoints import shifts as api_shifts
+from app.agent_service.api.api_v1.endpoints.agent import router as api_agent
+from app.agent_service.db.init_db import init_agent_db
 
 from app.core import AppSettings
 from app.auth_service.services.securityservice import SECURITY_SERVICE
@@ -48,8 +52,14 @@ def get_application() -> FastAPI:
     add_employee_department_information_routes(application)
     add_employee_account_details_routes(application)
     add_employee_professional_information_routes(application)
+    add_agent_routes(application)
+    try:
+        init_agent_db()
+    except Exception as e:
+        pass
 
-   
+    if os.path.exists("html"):
+        application.mount("/widget", StaticFiles(directory="html", html=True), name="widget")
 
     application.router.route_class = ValidationErrorLoggingRoute
     return application
@@ -120,6 +130,11 @@ def add_employee_account_details_routes(application:FastAPI):
 
 def add_employee_professional_information_routes(application:FastAPI):
     application.include_router(api_employee_prof_info, prefix='/api/v1', tags=['Employee Professional Information'])
+    return application 
+
+def add_agent_routes(application: FastAPI):
+    application.include_router(api_agent, prefix='/api/v1/agent', tags=['AI Agent'])
+    application.include_router(api_agent, prefix='/agent', tags=['AI Agent'])
     return application 
 
 

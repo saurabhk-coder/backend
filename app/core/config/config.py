@@ -1,4 +1,5 @@
 from typing import List, Optional
+from urllib.parse import quote_plus
 
 from pydantic import (
     AnyHttpUrl,
@@ -38,11 +39,14 @@ class DBSettings(BaseSettings):
         if not all([user, password, database]):
             return None
 
+        safe_user = quote_plus(str(user))
+        safe_password = quote_plus(str(password))
+
         # Cloud Run + Cloud SQL Unix socket
         if instance_connection_name:
             return (
                 f"postgresql+psycopg2://"
-                f"{user}:{password}@/{database}"
+                f"{safe_user}:{safe_password}@/{database}"
                 f"?host=/cloudsql/{instance_connection_name}"
             )
 
@@ -54,7 +58,7 @@ class DBSettings(BaseSettings):
 
         return (
             f"postgresql+psycopg2://"
-            f"{user}:{password}@{server}/{database}"
+            f"{safe_user}:{safe_password}@{server}/{database}"
         )
 
 class SMTPSettings(BaseSettings):
