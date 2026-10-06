@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS hrms.ai_agent_configs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     agent_name VARCHAR(100) NOT NULL DEFAULT 'Leslie',
     agent_title VARCHAR(150) NOT NULL DEFAULT 'AI Product & Support Specialist',
-    company_name VARCHAR(100) NOT NULL DEFAULT 'Aaralia / Asana',
+    company_name VARCHAR(100) NOT NULL DEFAULT 'Aaralia',
     avatar_url TEXT,
     video_url TEXT,
     greeting_message TEXT NOT NULL DEFAULT 'Hi! I''m Leslie. How are you currently managing team goals and daily tasks? I can help show how our platform connects strategy to execution smoothly.',

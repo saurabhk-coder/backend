@@ -174,7 +174,7 @@ class AiAgentConfigDb(Base):
     )
     agent_name = Column(String(100), nullable=False, default="Leslie")
     agent_title = Column(String(150), nullable=False, default="AI Product & Support Specialist")
-    company_name = Column(String(100), nullable=False, default="Aaralia / Asana")
+    company_name = Column(String(100), nullable=False, default="Aaralia /")
     avatar_url = Column(Text, nullable=True)
     video_url = Column(Text, nullable=True)
     greeting_message = Column(
