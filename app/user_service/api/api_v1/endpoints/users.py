@@ -19,40 +19,40 @@ def read_user_me(
     """
     return current_user
 
-@users.get("/list", response_model=UserListResponse,dependencies=[Depends(HTTPBearer())])
-def user_list(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user),
-) -> BaseResponseSchema:
-    response=USER_SERVICE.get_user_list(db,current_user.accountId)
-    if not response:
-        raise HTTPException(status_code=404, detail="UserList Not Found")
-    return response
+# @users.get("/list", response_model=UserListResponse,dependencies=[Depends(HTTPBearer())])
+# def user_list(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     current_user: User = Depends(deps.get_current_active_user),
+# ) -> BaseResponseSchema:
+#     response=USER_SERVICE.get_user_list(db,current_user.accountId)
+#     if not response:
+#         raise HTTPException(status_code=404, detail="UserList Not Found")
+#     return response
 
-@users.get("/{userId}", response_model=UserDetails,dependencies=[Depends(HTTPBearer())])
-def user_details(
-    *,
-    db: Session = Depends(deps.get_db),
-    userId:str,
-    # current_user: User = Depends(deps.get_current_active_user),
-) -> UserDetails:
-    response=USER_SERVICE.get_user_details(db,userId)
-    if not response:
-        raise HTTPException(status_code=404, detail="UserList Not Found")
-    return response
+# @users.get("/{userId}", response_model=UserDetails,dependencies=[Depends(HTTPBearer())])
+# def user_details(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     userId:str,
+#     # current_user: User = Depends(deps.get_current_active_user),
+# ) -> UserDetails:
+#     response=USER_SERVICE.get_user_details(db,userId)
+#     if not response:
+#         raise HTTPException(status_code=404, detail="UserList Not Found")
+#     return response
 
-@users.get("/{username}/user", response_model=UserDetails)
-def user_details_name(
-    *,
-    db: Session = Depends(deps.get_db),
-    username:str,
-    # current_user: User = Depends(deps.get_current_active_user),
-) -> UserDetails:
-    response=USER_SERVICE.get_user_details_name(db,username)
-    if not response:
-        raise HTTPException(status_code=404, detail="UserList Not Found")
-    return response
+# @users.get("/{username}/user", response_model=UserDetails)
+# def user_details_name(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     username:str,
+#     # current_user: User = Depends(deps.get_current_active_user),
+# ) -> UserDetails:
+#     response=USER_SERVICE.get_user_details_name(db,username)
+#     if not response:
+#         raise HTTPException(status_code=404, detail="UserList Not Found")
+#     return response
 
 # @users.post("/invite", response_model=UserDetails,dependencies=[Depends(HTTPBearer())])
 # def InviteUser(

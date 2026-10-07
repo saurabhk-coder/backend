@@ -72,122 +72,122 @@ def get_google_token(
     response =SECURITY_SERVICE.create_access_token(user.user_id, access_token_expires)
     return response
 
-# signup
-@auth.post("/signup", response_model=SignupResponse,)
-def signup_new_user(
-    request: SignupRequest,
-    db: Session = Depends(deps.get_db), 
-)->SignupResponse:
-    user=AUTH_SERVICE.check_user_exist(db,request.email)
-    if user.user_exist==True:
-        response = SignupResponse
-        response.error= True
-        response.message="user already exist"
-        return response
-    else:
-        users = AUTH_SERVICE.signup(db, request)
-        account_id=users.accountId
+# # signup
+# @auth.post("/signup", response_model=SignupResponse,)
+# def signup_new_user(
+#     request: SignupRequest,
+#     db: Session = Depends(deps.get_db), 
+# )->SignupResponse:
+#     user=AUTH_SERVICE.check_user_exist(db,request.email)
+#     if user.user_exist==True:
+#         response = SignupResponse
+#         response.error= True
+#         response.message="user already exist"
+#         return response
+#     else:
+#         users = AUTH_SERVICE.signup(db, request)
+#         account_id=users.accountId
 
-        response = SignupResponse
-        response.error = False
-        response.message="user added"
+#         response = SignupResponse
+#         response.error = False
+#         response.message="user added"
         
-        # project = PROJECT_SERVICE.add_project( users.firstName,users.lastName,users.userId,users.accountId)
-        # PROJECT_SETUP.new_project_setup(str(project.projectId),users.firstName,users.lastName,users.accountId,project.projectName)
-        return users
+#         # project = PROJECT_SERVICE.add_project( users.firstName,users.lastName,users.userId,users.accountId)
+#         # PROJECT_SETUP.new_project_setup(str(project.projectId),users.firstName,users.lastName,users.accountId,project.projectName)
+#         return users
     
 
 
-@auth.put("", response_model=UpdateProfileResponse)
-def update_profile(
-    *,
-    db: Session = Depends(deps.get_db),
-    request: UpdateProfile, 
-) -> UpdateProfileResponse:
-    response=AUTH_SERVICE.update_user(db,request)
-    if not response:
-        raise HTTPException(status_code=404, detail="Password not update")
-    return response
+# @auth.put("", response_model=UpdateProfileResponse)
+# def update_profile(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     request: UpdateProfile, 
+# ) -> UpdateProfileResponse:
+#     response=AUTH_SERVICE.update_user(db,request)
+#     if not response:
+#         raise HTTPException(status_code=404, detail="Password not update")
+#     return response
 
 
 
 
-@auth.put("/updatePassword", response_model=BaseResponseSchema)
-def update_password(
-    *,
-    db: Session = Depends(deps.get_db),
-    request: ResetPasswordRequest, 
-) -> BaseResponseSchema:
-    user = AUTH_SERVICE.authenticate(db, email=request.username, password=request.password)
-    if not user:
-        raise HTTPException(status_code=400, detail="Incorrect  password")
-    elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    else:
-        response=AUTH_SERVICE.reset_password(db,request)
-        if not response:
-            raise HTTPException(status_code=404, detail="Password not update")
-        return response
+# @auth.put("/updatePassword", response_model=BaseResponseSchema)
+# def update_password(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     request: ResetPasswordRequest, 
+# ) -> BaseResponseSchema:
+#     user = AUTH_SERVICE.authenticate(db, email=request.username, password=request.password)
+#     if not user:
+#         raise HTTPException(status_code=400, detail="Incorrect  password")
+#     elif not user.is_active:
+#         raise HTTPException(status_code=400, detail="Inactive user")
+#     else:
+#         response=AUTH_SERVICE.reset_password(db,request)
+#         if not response:
+#             raise HTTPException(status_code=404, detail="Password not update")
+#         return response
     
-@auth.put("/app/version", response_model=BaseResponseSchema)
-def update_version(
-    *,
-    db: Session = Depends(deps.get_db),
-    request: VersionUpdate, 
-) -> BaseResponseSchema:
+# @auth.put("/app/version", response_model=BaseResponseSchema)
+# def update_version(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     request: VersionUpdate, 
+# ) -> BaseResponseSchema:
    
-    response=AUTH_SERVICE.reset_token(db,request)
-    if not response:
-        raise HTTPException(status_code=404, detail="app version update")
-    return response
+#     response=AUTH_SERVICE.reset_token(db,request)
+#     if not response:
+#         raise HTTPException(status_code=404, detail="app version update")
+#     return response
     
-@auth.put("/reset/Password", response_model=BaseResponseSchema)
-def reset_password(
-    *,
-    db: Session = Depends(deps.get_db),
-    request: ResetPasswordRequest, 
-) -> BaseResponseSchema:
+# @auth.put("/reset/Password", response_model=BaseResponseSchema)
+# def reset_password(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     request: ResetPasswordRequest, 
+# ) -> BaseResponseSchema:
     
-    response=AUTH_SERVICE.reset_password(db,request)
-    if not response:
-        raise HTTPException(status_code=404, detail="Password not update")
-    return response
+#     response=AUTH_SERVICE.reset_password(db,request)
+#     if not response:
+#         raise HTTPException(status_code=404, detail="Password not update")
+#     return response
 
 
-@auth.get("/country", response_model=CountryListResponse)
-def get_country_list(
-    *,
-    db: Session = Depends(deps.get_db),
-) -> CountryListResponse:
-    response=AUTH_SERVICE.get_country_list(db)
+# @auth.get("/country", response_model=CountryListResponse)
+# def get_country_list(
+#     *,
+#     db: Session = Depends(deps.get_db),
+# ) -> CountryListResponse:
+#     response=AUTH_SERVICE.get_country_list(db)
 
-    if not response:
-        raise HTTPException(status_code=404, detail="Country List not found")
-    return response
+#     if not response:
+#         raise HTTPException(status_code=404, detail="Country List not found")
+#     return response
 
-@auth.get("/checkUser/{username}", response_model=CheckUserResponse)
-def check_user_exist(
-    *,
-    username: str,
-    db: Session = Depends(deps.get_db),
-) -> CheckUserResponse:
-    response=AUTH_SERVICE.check_user_exist(db,username)
-    return response
+# @auth.get("/checkUser/{username}", response_model=CheckUserResponse)
+# def check_user_exist(
+#     *,
+#     username: str,
+#     db: Session = Depends(deps.get_db),
+# ) -> CheckUserResponse:
+#     response=AUTH_SERVICE.check_user_exist(db,username)
+#     return response
 
-@auth.get('/forgot_password', response_class=HTMLResponse, response_model_exclude_unset=True)
-async def ForgetPasswordFromToken( username: str,otp: str, db: Session = Depends(deps.get_db))-> HTMLResponse:
-    response=AUTH_SERVICE.ForgetPassword(db,username,otp)
-    return HTMLResponse(content=response, status_code=200)
+# @auth.get('/forgot_password', response_class=HTMLResponse, response_model_exclude_unset=True)
+# async def ForgetPasswordFromToken( username: str,otp: str, db: Session = Depends(deps.get_db))-> HTMLResponse:
+#     response=AUTH_SERVICE.ForgetPassword(db,username,otp)
+#     return HTMLResponse(content=response, status_code=200)
 
-@auth.get('/app/forgot_password', response_class=HTMLResponse, response_model_exclude_unset=True)
-async def AppForgetPasswordFromToken( username: str,otp: str, db: Session = Depends(deps.get_db))-> HTMLResponse:
-    response=AUTH_SERVICE.AppForgetPassword(db,username,otp)
-    return HTMLResponse(content=response, status_code=200)
+# @auth.get('/app/forgot_password', response_class=HTMLResponse, response_model_exclude_unset=True)
+# async def AppForgetPasswordFromToken( username: str,otp: str, db: Session = Depends(deps.get_db))-> HTMLResponse:
+#     response=AUTH_SERVICE.AppForgetPassword(db,username,otp)
+#     return HTMLResponse(content=response, status_code=200)
 
-@auth.get('/password-reset', response_class=HTMLResponse, response_model_exclude_unset=True)
-async def PasswordReset( token: str, db: Session = Depends(deps.get_db))-> HTMLResponse:
-    response=AUTH_SERVICE.ResetFormManager(db,token)
-    return HTMLResponse(content=response, status_code=200) 
+# @auth.get('/password-reset', response_class=HTMLResponse, response_model_exclude_unset=True)
+# async def PasswordReset( token: str, db: Session = Depends(deps.get_db))-> HTMLResponse:
+#     response=AUTH_SERVICE.ResetFormManager(db,token)
+#     return HTMLResponse(content=response, status_code=200) 
 
 
 def function_names_as_operation_ids(app: fastapi) -> None:
