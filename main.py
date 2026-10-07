@@ -20,6 +20,8 @@ from app.employee_service.api.api_v1.endpoints import (
     employee_professional_information_router as api_employee_prof_info,
 )
 from app.shift_service.api.api_v1.endpoints import shifts as api_shifts
+from app.attendance_service.api.api_v1.endpoints import attendance_router as api_attendance
+from app.attendance_service.db.init_db import init_attendance_db
 from app.agent_service.api.api_v1.endpoints.agent import router as api_agent
 from app.agent_service.db.init_db import init_agent_db
 
@@ -46,6 +48,7 @@ def get_application() -> FastAPI:
     add_organization_settings_routes(application)
     add_calendar_settings_routes(application)
     add_shift_routes(application)
+    add_attendance_routes(application)
     add_employee_personal_information_routes(application)
 
 
@@ -55,6 +58,10 @@ def get_application() -> FastAPI:
     add_agent_routes(application)
     try:
         init_agent_db()
+    except Exception as e:
+        pass
+    try:
+        init_attendance_db()
     except Exception as e:
         pass
 
@@ -111,6 +118,12 @@ def add_shift_routes(application:FastAPI):
     router = getattr(api_shifts, "shifts", api_shifts)
     application.include_router(router, prefix='/api/v1/shifts', tags=['Shifts'])
     application.include_router(router, prefix='/shifts', tags=['Shifts'])
+    return application
+
+def add_attendance_routes(application: FastAPI):
+    router = getattr(api_attendance, "attendance_router", getattr(api_attendance, "attendance", api_attendance))
+    application.include_router(router, prefix='/api/v1/attendance', tags=['Attendance'])
+    application.include_router(router, prefix='/attendance', tags=['Attendance'])
     return application
 
  

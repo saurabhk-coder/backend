@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     DefaultClause,
     ForeignKey,
+    JSON,
     String,
     Text,
     Time,
@@ -34,9 +35,9 @@ class AiAgentSessionDb(Base):
     session_name = Column(String(255), default="AI Agent Session", nullable=False)
     visitor_id = Column(String(100), nullable=True)
     metadata_json = Column(
-        JSONB,
+        JSON().with_variant(JSONB, "postgresql"),
         default=dict,
-        server_default=DefaultClause(text("'{}'::jsonb")),
+        server_default=DefaultClause(text("'{}'")),
         nullable=False,
     )
     is_active = Column(Boolean, default=True, nullable=False)
@@ -83,9 +84,9 @@ class AiAgentMessageDb(Base):
     content = Column(Text, nullable=False)
     action_type = Column(String(50), nullable=True, default="chat")
     metadata_json = Column(
-        JSONB,
+        JSON().with_variant(JSONB, "postgresql"),
         default=dict,
-        server_default=DefaultClause(text("'{}'::jsonb")),
+        server_default=DefaultClause(text("'{}'")),
         nullable=False,
     )
     created_at = Column(
@@ -183,21 +184,21 @@ class AiAgentConfigDb(Base):
         default="Hi! I'm Leslie. How are you currently managing team goals and daily tasks? I can help show how our platform connects strategy to execution smoothly.",
     )
     suggested_questions = Column(
-        JSONB,
+        JSON().with_variant(JSONB, "postgresql"),
         default=list,
         server_default=DefaultClause(
             text(
-                '\'["What are our shift timings?", "Who is available in the engineering department?", "What skills does our team have?", "What is our weekend and calendar policy?"]\'::jsonb'
+                '\'["What are our shift timings?", "Who is available in the engineering department?", "What skills does our team have?", "What is our weekend and calendar policy?"]\''
             )
         ),
         nullable=False,
     )
     quick_actions = Column(
-        JSONB,
+        JSON().with_variant(JSONB, "postgresql"),
         default=list,
         server_default=DefaultClause(
             text(
-                '\'[{"id": "book_meeting", "title": "Book a Meeting", "action": "open_modal"}, {"id": "request_support", "title": "Request Support", "action": "open_modal"}]\'::jsonb'
+                '\'[{"id": "book_meeting", "title": "Book a Meeting", "action": "open_modal"}, {"id": "request_support", "title": "Request Support", "action": "open_modal"}]\''
             )
         ),
         nullable=False,
