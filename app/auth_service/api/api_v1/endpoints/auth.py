@@ -112,7 +112,6 @@ def get_access_token(
     response.role = role_name
     response.role_id = role_id_str
     response.permissions_json = permissions_json
-    response.permission_json = permissions_json
     response.message = "Login successful"
     response.success = True
     response.error = False
