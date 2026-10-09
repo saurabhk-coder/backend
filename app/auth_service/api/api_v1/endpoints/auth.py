@@ -78,9 +78,10 @@ def get_access_token(
     # 3. Successful authentication: reset rate limiter state for this user
     LOGIN_RATE_LIMITER.clear(username)
 
-    # 4. Resolve user role
+    # 4. Resolve user role and permissions
     role_name = None
     role_id_str = None
+    permissions_json = None
     if getattr(user, "role_id", None):
         role_id_str = str(user.role_id)
         try:
@@ -90,8 +91,10 @@ def get_access_token(
                 else user.role_id
             )
             role_obj = db.query(RoleDb).filter(RoleDb.id == role_uuid).first()
-            if role_obj and role_obj.name:
-                role_name = role_obj.name
+            if role_obj:
+                if role_obj.name:
+                    role_name = role_obj.name
+                permissions_json = role_obj.permissions_json
         except Exception:
             pass
 
@@ -100,10 +103,16 @@ def get_access_token(
 
     access_token_expires = timedelta(minutes=AppSettings.API.ACCESS_TOKEN_EXPIRE_MINUTES)
     response = SECURITY_SERVICE.create_access_token(
-        user.id, access_token_expires, role=role_name, role_id=role_id_str
+        user.id,
+        access_token_expires,
+        role=role_name,
+        role_id=role_id_str,
+        permissions_json=permissions_json,
     )
     response.role = role_name
     response.role_id = role_id_str
+    response.permissions_json = permissions_json
+    response.permission_json = permissions_json
     response.message = "Login successful"
     response.success = True
     response.error = False
@@ -157,9 +166,10 @@ def get_google_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Resolve user role
+    # Resolve user role and permissions
     role_name = None
     role_id_str = None
+    permissions_json = None
     if getattr(user, "role_id", None):
         role_id_str = str(user.role_id)
         try:
@@ -169,8 +179,10 @@ def get_google_token(
                 else user.role_id
             )
             role_obj = db.query(RoleDb).filter(RoleDb.id == role_uuid).first()
-            if role_obj and role_obj.name:
-                role_name = role_obj.name
+            if role_obj:
+                if role_obj.name:
+                    role_name = role_obj.name
+                permissions_json = role_obj.permissions_json
         except Exception:
             pass
 
@@ -180,10 +192,16 @@ def get_google_token(
     access_token_expires = timedelta(minutes=AppSettings.API.ACCESS_TOKEN_EXPIRE_MINUTES)
     sub = getattr(user, "user_id", None) or getattr(user, "id", None)
     response = SECURITY_SERVICE.create_access_token(
-        sub, access_token_expires, role=role_name, role_id=role_id_str
+        sub,
+        access_token_expires,
+        role=role_name,
+        role_id=role_id_str,
+        permissions_json=permissions_json,
     )
     response.role = role_name
     response.role_id = role_id_str
+    response.permissions_json = permissions_json
+    response.permission_json = permissions_json
     response.message = "Login successful"
     response.success = True
     response.error = False

@@ -25,6 +25,7 @@ class ISecurityService(ABC):
         expires_delta: Optional[timedelta] = None,
         role: Optional[str] = None,
         role_id: Optional[str] = None,
+        permissions_json: Optional[Any] = None,
     ) -> Token:
         pass
 
@@ -61,6 +62,7 @@ class SecurityService(ISecurityService):
         expires_delta: Optional[timedelta] = None,
         role: Optional[str] = None,
         role_id: Optional[str] = None,
+        permissions_json: Optional[Any] = None,
     ) -> Token:
 
         if expires_delta:
@@ -93,6 +95,8 @@ class SecurityService(ISecurityService):
             token_type="bearer",
             role=role,
             role_id=role_id,
+            permissions_json=permissions_json,
+            permission_json=permissions_json,
             error=False,
             message="Token generated successfully",
             success=True,

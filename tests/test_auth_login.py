@@ -126,7 +126,7 @@ class TestAuthLoginEndpoints(unittest.TestCase):
         LOGIN_RATE_LIMITER.clear()
 
     def test_01_successful_login_returns_role_and_token(self):
-        """Successful login should return status 200, access token, and the role name."""
+        """Successful login should return status 200, access token, role name, and permissions JSON."""
         response = self.client.post(
             "/api/v1/auth/login",
             data={"username": "admin@example.com", "password": self.password},
@@ -138,11 +138,13 @@ class TestAuthLoginEndpoints(unittest.TestCase):
         self.assertEqual(data.get("token_type"), "bearer")
         self.assertEqual(data.get("role"), "Admin")
         self.assertEqual(data.get("role_id"), str(self.role_id))
+        self.assertEqual(data.get("permissions_json"), {"all": True})
+        self.assertEqual(data.get("permission_json"), {"all": True})
         self.assertEqual(data.get("success"), True)
         self.assertEqual(data.get("error"), False)
 
     def test_02_successful_login_user_without_role(self):
-        """User without assigned role should return status 200 with role=None."""
+        """User without assigned role should return status 200 with role=None and permissions_json=None."""
         response = self.client.post(
             "/api/v1/auth/login",
             data={"username": "norole@example.com", "password": self.password},
@@ -152,6 +154,8 @@ class TestAuthLoginEndpoints(unittest.TestCase):
         self.assertIn("access_token", data)
         self.assertIsNone(data.get("role"))
         self.assertIsNone(data.get("role_id"))
+        self.assertIsNone(data.get("permissions_json"))
+        self.assertIsNone(data.get("permission_json"))
 
     def test_03_login_failure_incorrect_password_returns_401(self):
         """Incorrect password must return 401 code and proper error message."""
