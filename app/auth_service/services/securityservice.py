@@ -23,6 +23,8 @@ class ISecurityService(ABC):
         self,
         subject: str,
         expires_delta: Optional[timedelta] = None,
+        role: Optional[str] = None,
+        role_id: Optional[str] = None,
     ) -> Token:
         pass
 
@@ -57,6 +59,8 @@ class SecurityService(ISecurityService):
         self,
         subject: str,
         expires_delta: Optional[timedelta] = None,
+        role: Optional[str] = None,
+        role_id: Optional[str] = None,
     ) -> Token:
 
         if expires_delta:
@@ -73,6 +77,10 @@ class SecurityService(ISecurityService):
             "exp": expire,
             "sub": str(subject),
         }
+        if role is not None:
+            to_encode["role"] = role
+        if role_id is not None:
+            to_encode["role_id"] = str(role_id)
 
         encoded_jwt = jwt.encode(
             to_encode,
@@ -83,6 +91,11 @@ class SecurityService(ISecurityService):
         return Token(
             access_token=encoded_jwt,
             token_type="bearer",
+            role=role,
+            role_id=role_id,
+            error=False,
+            message="Token generated successfully",
+            success=True,
         )
 
     def verify_password(
