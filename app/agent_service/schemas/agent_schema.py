@@ -149,6 +149,45 @@ class SupportRequestResponse(BaseModel):
 
 
 # ----------------------------------------------------
+# Action Handler: Create Employee
+# ----------------------------------------------------
+class CreateEmployeeActionRequest(BaseModel):
+    session_id: Optional[str] = None
+    organization_id: Optional[UUID] = Field(None, description="Organization ID")
+    profile_photo: Optional[str] = Field(None, description="Profile photo URL or base64")
+    first_name: str = Field(..., min_length=1, max_length=100, description="First name")
+    last_name: Optional[str] = Field(None, max_length=100, description="Last name")
+    mobile_number: Optional[str] = Field(None, max_length=20, description="Mobile number")
+    email: Optional[str] = Field(None, max_length=255, description="Email address")
+    father_name: Optional[str] = Field(None, max_length=150, description="Father's name")
+    mother_name: Optional[str] = Field(None, max_length=150, description="Mother's name")
+    marital_status: Optional[str] = Field(None, max_length=30, description="Marital status")
+    spouse_name: Optional[str] = Field(None, max_length=150, description="Spouse's name")
+    emergency_contact: Optional[str] = Field(None, max_length=20, description="Emergency contact phone")
+    date_of_birth: Optional[date] = Field(None, description="Date of birth (YYYY-MM-DD)")
+    govt_id_proof: Optional[str] = Field(None, max_length=50, description="Government ID type")
+    id_proof_number: Optional[str] = Field(None, max_length=100, description="Government ID number")
+    gender: Optional[str] = Field(None, max_length=30, description="Gender")
+    nationality: Optional[str] = Field(None, max_length=100, description="Nationality")
+    address: Optional[str] = Field(None, description="Residential street address")
+    city: Optional[str] = Field(None, max_length=100, description="City")
+    state: Optional[str] = Field(None, max_length=100, description="State / Province")
+    zip_code: Optional[str] = Field(None, max_length=20, description="Zip / Postal code")
+    employee_id: Optional[int] = Field(0, description="Employee ID (0 for auto-generate)")
+
+
+class CreateEmployeeActionResponse(BaseModel):
+    employee_id: int
+    employee_code: Optional[str] = None
+    first_name: str
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    status: str = "created"
+    confirmation_message: str
+    record: Optional[Dict[str, Any]] = None
+
+
+# ----------------------------------------------------
 # Direct Database Search
 # ----------------------------------------------------
 class DbSearchRequest(BaseModel):

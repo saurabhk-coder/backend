@@ -20,6 +20,8 @@ from app.agent_service.schemas.agent_schema import (
     SessionResponse,
     SupportRequestCreate,
     SupportRequestResponse,
+    CreateEmployeeActionRequest,
+    CreateEmployeeActionResponse,
     SynthesizeRequest,
     SynthesizeResponse,
     TranscribeResponse,
@@ -239,3 +241,25 @@ async def synthesize_voice(req: SynthesizeRequest) -> SynthesizeResponse:
 def get_avatar_status(session_id: Optional[str] = "default") -> AvatarSessionResponse:
     """Returns avatar state (idle, speaking, listening) and video stream URL."""
     return VOICE_SERVICE.get_avatar_session(session_id or "default")
+
+
+# =============================================================================
+# 7. Employee Creation (CTA & Action)
+# =============================================================================
+@router.post("/actions/create-employee", response_model=CreateEmployeeActionResponse, summary="Create Employee (Action CTA)")
+def create_employee(
+    payload: CreateEmployeeActionRequest,
+    db: Session = Depends(get_db),
+) -> CreateEmployeeActionResponse:
+    """
+    Handles employee creation directly or via widget modal.
+    Enters employee into the database and synchronizes user account.
+    """
+    return AGENT_SERVICE.create_employee_direct(db, payload)
+
+
+@router.get("/actions/employees", summary="List Created Employees")
+def list_employees(limit: int = 20, db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
+    """Lists recent employees created via the agent."""
+    return AGENT_SERVICE.list_employees(db, limit)
+
