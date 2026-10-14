@@ -262,6 +262,19 @@ class AgentService:
                 db_sources=None,
                 suggested_followups=["Request Support", "Book a Meeting", "Check shift schedule"],
             )
+        if "create employee" in lower_msg or "help desk" in lower_msg or "submit ticket" in lower_msg:
+            reply_text = (
+                "I can certainly connect you with our support team! Please click the **'Request Support'** button "
+                "or describe the issue you're facing, and I will create a priority support ticket for you."
+            )
+            return self._record_and_return_assistant_reply(
+                db=db,
+                session=session,
+                reply_text=reply_text,
+                action_type="support_prompt",
+                db_sources=None,
+                suggested_followups=["Request Support", "Book a Meeting", "Check shift schedule"],
+            )
 
         # 3. Query Database for Grounding
         db_results: Optional[Dict[str, Any]] = None
