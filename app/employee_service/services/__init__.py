@@ -18,6 +18,11 @@ from .employee_professional_information_service import (
     IEmployeeProfessionalInformationService,
     EMPLOYEE_PROFESSIONAL_INFORMATION_SERVICE,
 )
+from .employee_document_service import (
+    EmployeeDocumentService,
+    IEmployeeDocumentService,
+    EMPLOYEE_DOCUMENT_SERVICE,
+)
 
 __all__ = [
     "EmployeePersonalInformationService",
@@ -32,5 +37,8 @@ __all__ = [
     "EmployeeProfessionalInformationService",
     "IEmployeeProfessionalInformationService",
     "EMPLOYEE_PROFESSIONAL_INFORMATION_SERVICE",
+    "EmployeeDocumentService",
+    "IEmployeeDocumentService",
+    "EMPLOYEE_DOCUMENT_SERVICE",
 ]
 

@@ -86,6 +86,17 @@ class AzureSettings(BaseSettings):
     )
 
 
+class GCSSettings(BaseSettings):
+    GCS_BUCKET_NAME: str = "hrms-aaralia"
+    GCS_PROJECT_ID: Optional[str] = None
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
+
+
 class EmailSettings(BaseSettings):
     EMAILS_FROM_EMAIL: Optional[EmailStr] = None
     EMAILS_FROM_NAME: Optional[str] = None
@@ -153,6 +164,7 @@ class Settings:
         self.DB = DBSettings()
         self.EMAIL = EmailSettings()
         self.AZURE = AzureSettings()
+        self.GCS = GCSSettings()
         self.API = APISettings()
         self.DEFAULTS = DefaultSettings()
         self.SENTRY = SentrySettings()

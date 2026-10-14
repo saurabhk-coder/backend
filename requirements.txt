@@ -40,8 +40,9 @@ sqlalchemy-json>=0.7,<1.0
 alembic>=1.15,<2.0
 
 # ------------------------------
-# Azure
+# Cloud Storage
 # ------------------------------
+google-cloud-storage>=3.0.0,<4.0.0
 azure-storage-blob>=12.25,<13.0
 azure-mgmt-storage>=23.0,<24.0
 

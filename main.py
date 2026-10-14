@@ -18,7 +18,9 @@ from app.employee_service.api.api_v1.endpoints import (
     employee_department_information_router as api_employee_dept_info,
     employee_account_details_router as api_employee_account_details,
     employee_professional_information_router as api_employee_prof_info,
+    employee_documents_router as api_employee_documents,
 )
+from app.employee_service.db.init_documents_db import init_documents_db
 from app.shift_service.api.api_v1.endpoints import shifts as api_shifts
 from app.attendance_service.api.api_v1.endpoints import attendance_router as api_attendance
 from app.attendance_service.db.init_db import init_attendance_db
@@ -55,6 +57,7 @@ def get_application() -> FastAPI:
     add_employee_department_information_routes(application)
     add_employee_account_details_routes(application)
     add_employee_professional_information_routes(application)
+    add_employee_documents_routes(application)
     add_agent_routes(application)
     try:
         init_agent_db()
@@ -62,6 +65,10 @@ def get_application() -> FastAPI:
         pass
     try:
         init_attendance_db()
+    except Exception as e:
+        pass
+    try:
+        init_documents_db()
     except Exception as e:
         pass
 
@@ -144,6 +151,11 @@ def add_employee_account_details_routes(application:FastAPI):
 def add_employee_professional_information_routes(application:FastAPI):
     application.include_router(api_employee_prof_info, prefix='/api/v1', tags=['Employee Professional Information'])
     return application 
+
+def add_employee_documents_routes(application: FastAPI):
+    application.include_router(api_employee_documents, prefix='/api/v1', tags=['Employee Documents'])
+    application.include_router(api_employee_documents, tags=['Employee Documents'])
+    return application
 
 def add_agent_routes(application: FastAPI):
     application.include_router(api_agent, prefix='/api/v1/agent', tags=['AI Agent'])

@@ -30,6 +30,15 @@ from .employee_professional_information import (
     EmployeeProfessionalInformationListResponse,
     EmployeeProfessionalInformationDeleteResponse,
 )
+from .employee_document import (
+    EmployeeDocumentBase,
+    EmployeeDocumentCreate,
+    EmployeeDocumentUpdate,
+    EmployeeDocumentResponse,
+    EmployeeDocumentListResponse,
+    EmployeeDocumentDeleteResponse,
+    DocumentCategoryItem,
+)
 
 __all__ = [
     "EmployeePersonalInformationBase",
@@ -56,5 +65,12 @@ __all__ = [
     "EmployeeProfessionalInformationResponse",
     "EmployeeProfessionalInformationListResponse",
     "EmployeeProfessionalInformationDeleteResponse",
+    "EmployeeDocumentBase",
+    "EmployeeDocumentCreate",
+    "EmployeeDocumentUpdate",
+    "EmployeeDocumentResponse",
+    "EmployeeDocumentListResponse",
+    "EmployeeDocumentDeleteResponse",
+    "DocumentCategoryItem",
 ]
 
