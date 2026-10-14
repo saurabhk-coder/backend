@@ -264,7 +264,7 @@ class AgentService:
             )
         if "create employee" in lower_msg or "help desk" in lower_msg or "submit ticket" in lower_msg:
             reply_text = (
-                "I can certainly connect you with our support team! Please click the **'Request Support'** button "
+                "I can certainly create the employee! Please click the **'create employee'** button "
                 "or describe the issue you're facing, and I will create a priority support ticket for you."
             )
             return self._record_and_return_assistant_reply(
