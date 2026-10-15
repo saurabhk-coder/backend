@@ -30,7 +30,7 @@ class EmployeePersonalInformationBase(BaseModel):
 
 
 class EmployeePersonalInformationCreate(EmployeePersonalInformationBase):
-    employee_id: int = Field(..., description="Employee ID foreign key reference")
+    employee_id: Optional[int] = Field(None, description="Employee ID foreign key reference (optional; auto-resolved from employee table by email or auto-created)")
 
 
 class EmployeePersonalInformationUpdate(BaseModel):

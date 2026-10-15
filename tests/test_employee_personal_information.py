@@ -111,18 +111,54 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
         self.assertIn("created_at", data)
         self.assertIn("updated_at", data)
 
-    def test_create_personal_info_duplicate_409(self):
+    def test_create_personal_info_updates_existing_by_email(self):
         payload = {
-            "employee_id": 101,
             "first_name": "Alice",
             "email": "alice@example.com",
+            "city": "Dallas",
         }
         res1 = self.client.post("/api/v1/employee-personal-information", json=payload)
         self.assertEqual(res1.status_code, 201)
+        data1 = res1.json()
+        emp_id = data1["employee_id"]
+        self.assertIsNotNone(emp_id)
 
-        res2 = self.client.post("/api/v1/employee-personal-information", json=payload)
-        self.assertEqual(res2.status_code, 409)
-        self.assertIn("already exists", res2.json()["detail"])
+        update_payload = {
+            "first_name": "Alice",
+            "last_name": "Wonderland",
+            "email": "alice@example.com",
+            "city": "Austin",
+        }
+        res2 = self.client.post("/api/v1/employee-personal-information", json=update_payload)
+        self.assertIn(res2.status_code, [200, 201])
+        data2 = res2.json()
+        self.assertEqual(data2["employee_id"], emp_id)
+        self.assertEqual(data2["last_name"], "Wonderland")
+        self.assertEqual(data2["city"], "Austin")
+
+    def test_create_personal_info_without_employee_id_auto_creates_employee(self):
+        payload = {
+            "first_name": "Zara",
+            "last_name": "Larsson",
+            "email": "zara@example.com",
+            "city": "Stockholm",
+        }
+        response = self.client.post("/api/v1/employee-personal-information", json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertIn("employee_id", data)
+        assigned_id = data["employee_id"]
+        self.assertGreater(assigned_id, 0)
+        self.assertEqual(data["first_name"], "Zara")
+        self.assertEqual(data["email"], "zara@example.com")
+
+        # Verify that EmployeeDb was automatically created with this assigned_id
+        db = self.TestingSessionLocal()
+        try:
+            emp = db.query(EmployeeDb).filter(EmployeeDb.id == assigned_id).first()
+            self.assertIsNotNone(emp)
+        finally:
+            db.close()
 
     def test_get_personal_info_by_id_success(self):
         payload = {
@@ -402,6 +438,48 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
             self.assertTrue(pwd_context.verify("admin", user.password_hash))
         finally:
             db.close()
+
+    def test_by_email_endpoints(self):
+        # Create an employee without employee_id
+        create_res = self.client.post(
+            "/api/v1/employee-personal-information",
+            json={
+                "first_name": "Oliver",
+                "last_name": "Queen",
+                "email": "oliver@example.com",
+                "city": "Starling City",
+            },
+        )
+        self.assertEqual(create_res.status_code, 201)
+        data = create_res.json()
+        emp_id = data["employee_id"]
+
+        # 1. GET by email
+        get_res = self.client.get("/api/v1/employee-personal-information/email/oliver@example.com")
+        self.assertEqual(get_res.status_code, 200)
+        self.assertEqual(get_res.json()["employee_id"], emp_id)
+        self.assertEqual(get_res.json()["city"], "Starling City")
+
+        # 2. PATCH by email
+        patch_res = self.client.patch(
+            "/api/v1/employee-personal-information/email/oliver@example.com",
+            json={"city": "Star City"},
+        )
+        self.assertEqual(patch_res.status_code, 200)
+        self.assertEqual(patch_res.json()["city"], "Star City")
+
+        # 3. PUT by email
+        put_res = self.client.put(
+            "/api/v1/employee-personal-information/email/oliver@example.com",
+            json={"city": "Metropolis", "last_name": "Jonas"},
+        )
+        self.assertEqual(put_res.status_code, 200)
+        self.assertEqual(put_res.json()["city"], "Metropolis")
+        self.assertEqual(put_res.json()["last_name"], "Jonas")
+
+        # 4. GET nonexistent email -> 404
+        nf_res = self.client.get("/api/v1/employee-personal-information/email/unknown@example.com")
+        self.assertEqual(nf_res.status_code, 404)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import BigInteger, Column, DateTime, String, func
+from sqlalchemy import BigInteger, Column, DateTime, Integer, String, func
 from ..db.base_class import Base
 
 
@@ -7,7 +7,7 @@ class EmployeeDb(Base):
     __tablename__ = "employees"
     __table_args__ = {"schema": "hrms", "extend_existing": True}
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     employee_code = Column(String(50), nullable=True, unique=True, index=True)
     created_at = Column(
         DateTime(timezone=True),

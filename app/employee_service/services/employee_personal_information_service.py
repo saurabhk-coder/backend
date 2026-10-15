@@ -71,6 +71,21 @@ class IEmployeePersonalInformationService(ABC):
         pass
 
     @abstractmethod
+    def get_by_email(
+        self, db: Session, email: str
+    ) -> EmployeePersonalInformationResponse:
+        pass
+
+    @abstractmethod
+    def update_by_email(
+        self,
+        db: Session,
+        email: str,
+        request: EmployeePersonalInformationUpdate,
+    ) -> EmployeePersonalInformationResponse:
+        pass
+
+    @abstractmethod
     def delete(
         self, db: Session, employee_id: int
     ) -> EmployeePersonalInformationDeleteResponse:
@@ -81,14 +96,34 @@ class EmployeePersonalInformationService(IEmployeePersonalInformationService):
     def create(
         self, db: Session, request: EmployeePersonalInformationCreate
     ) -> EmployeePersonalInformationResponse:
-        existing = CRUD_EMPLOYEE_PERSONAL_INFORMATION.get(db, employee_id=request.employee_id)
-        if existing:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Employee personal information already exists for employee_id '{request.employee_id}'",
-            )
         record = CRUD_EMPLOYEE_PERSONAL_INFORMATION.create(db, obj_in=request)
         return EmployeePersonalInformationResponse.model_validate(record)
+
+    def get_by_email(
+        self, db: Session, email: str
+    ) -> EmployeePersonalInformationResponse:
+        record = CRUD_EMPLOYEE_PERSONAL_INFORMATION.get_by_email(db, email=email)
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee personal information not found for email '{email}'",
+            )
+        return EmployeePersonalInformationResponse.model_validate(record)
+
+    def update_by_email(
+        self,
+        db: Session,
+        email: str,
+        request: EmployeePersonalInformationUpdate,
+    ) -> EmployeePersonalInformationResponse:
+        record = CRUD_EMPLOYEE_PERSONAL_INFORMATION.get_by_email(db, email=email)
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee personal information not found for email '{email}'",
+            )
+        updated = CRUD_EMPLOYEE_PERSONAL_INFORMATION.update(db, db_obj=record, obj_in=request)
+        return EmployeePersonalInformationResponse.model_validate(updated)
 
     def get_by_employee_id(
         self, db: Session, employee_id: int

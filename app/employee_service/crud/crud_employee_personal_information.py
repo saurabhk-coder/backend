@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
+from ..models.employee import EmployeeDb
 from ..models.employee_personal_information import EmployeePersonalInformationDb
 from ..schemas.employee_personal_information import (
     EmployeePersonalInformationCreate,
@@ -38,6 +39,15 @@ class CRUDEmployeePersonalInformation:
             )
         except (ValueError, TypeError):
             return None
+
+    def get_by_email(self, db: Session, email: str) -> Optional[EmployeePersonalInformationDb]:
+        if not email or not str(email).strip():
+            return None
+        return (
+            db.query(EmployeePersonalInformationDb)
+            .filter(func.lower(EmployeePersonalInformationDb.email) == str(email).strip().lower())
+            .first()
+        )
 
     def get_multi(
         self,
@@ -129,9 +139,10 @@ class CRUDEmployeePersonalInformation:
         if org_uuid:
             try:
                 from app.organization_service.models.organization import OrganizationDb
-                org_exists = db.query(OrganizationDb.id).filter(OrganizationDb.id == org_uuid).first()
-                if not org_exists:
-                    org_uuid = None
+                if db.bind and db.bind.dialect.name != "sqlite":
+                    org_exists = db.query(OrganizationDb.id).filter(OrganizationDb.id == org_uuid).first()
+                    if not org_exists:
+                        org_uuid = None
             except Exception:
                 pass
         hashed_password = PWD_CONTEXT.hash("admin")
@@ -145,8 +156,8 @@ class CRUDEmployeePersonalInformation:
                 first_name=first_name,
                 last_name=last_name,
                 country_code="US",
-                status="active",
-                is_active=True,
+                status="inactive",
+                is_active=False,
                 created_at=now,
                 updated_at=now,
             )
@@ -159,8 +170,8 @@ class CRUDEmployeePersonalInformation:
                 existing_user.first_name = first_name
             if last_name:
                 existing_user.last_name = last_name
-            existing_user.status = "active"
-            existing_user.is_active = True
+            if not existing_user.status:
+                existing_user.status = "inactive"
             if not existing_user.password_salt:
                 existing_user.password_salt = hashed_password
             existing_user.updated_at = now
@@ -168,13 +179,58 @@ class CRUDEmployeePersonalInformation:
             return existing_user
 
     def create(
-        self, db: Session, *, obj_in: EmployeePersonalInformationCreate
+        self, db: Session, *, obj_in: Union[EmployeePersonalInformationCreate, Dict[str, Any]]
     ) -> EmployeePersonalInformationDb:
-        now = datetime.now(timezone.utc)
-        data = obj_in.model_dump()
+        if isinstance(obj_in, dict):
+            data = dict(obj_in)
+            email_val = data.get("email")
+            emp_id_val = data.get("employee_id")
+        else:
+            data = obj_in.model_dump()
+            email_val = obj_in.email
+            emp_id_val = obj_in.employee_id
+
+        # 1. Check if employee already exists in employee personal information table by email
+        existing = None
+        if email_val and str(email_val).strip():
+            existing = self.get_by_email(db, str(email_val).strip())
+
+        # 2. Also check by employee_id if provided and not found by email
+        if not existing and emp_id_val:
+            existing = self.get(db, employee_id=emp_id_val)
+
+        if existing:
+            # Found in employee table: take employee_id from employee table and update information by email
+            return self.update(db, db_obj=existing, obj_in=obj_in)
+
+        # 3. Not found in employee table: create in EmployeeDb (employees table) and return
+        if emp_id_val:
+            emp = db.query(EmployeeDb).filter(EmployeeDb.id == emp_id_val).first()
+            if not emp:
+                emp = EmployeeDb(id=emp_id_val, employee_code=f"EMP-{emp_id_val:04d}")
+                db.add(emp)
+                db.flush()
+            assigned_id = emp.id
+        else:
+            emp = EmployeeDb()
+            if db.bind and db.bind.dialect.name == "sqlite":
+                max_id = db.query(func.max(EmployeeDb.id)).scalar() or 0
+                next_id = int(max_id) + 1
+                emp.id = next_id
+                emp.employee_code = f"EMP-{next_id:04d}"
+            db.add(emp)
+            db.flush()
+            if not emp.employee_code:
+                emp.employee_code = f"EMP-{emp.id:04d}"
+                db.add(emp)
+                db.flush()
+            assigned_id = emp.id
+
+        data["employee_id"] = assigned_id
         if "organization_id" in data and data["organization_id"] is not None:
             data["organization_id"] = _to_uuid(data["organization_id"])
 
+        now = datetime.now(timezone.utc)
         db_obj = EmployeePersonalInformationDb(
             **data,
             created_at=now,
@@ -188,11 +244,11 @@ class CRUDEmployeePersonalInformation:
             with db.begin_nested():
                 self._sync_user(
                     db,
-                    employee_id=obj_in.employee_id,
-                    email=obj_in.email,
-                    first_name=obj_in.first_name,
-                    last_name=obj_in.last_name,
-                    organization_id=obj_in.organization_id,
+                    employee_id=assigned_id,
+                    email=data.get("email"),
+                    first_name=data.get("first_name"),
+                    last_name=data.get("last_name"),
+                    organization_id=data.get("organization_id"),
                     now=now,
                 )
         except Exception as exc:
@@ -264,6 +320,18 @@ class CRUDEmployeePersonalInformation:
             create_schema = EmployeePersonalInformationCreate(**create_dict)
 
         return self.create(db, obj_in=create_schema)
+
+    def update_by_email(
+        self,
+        db: Session,
+        *,
+        email: str,
+        obj_in: Union[EmployeePersonalInformationUpdate, Dict[str, Any]],
+    ) -> Optional[EmployeePersonalInformationDb]:
+        record = self.get_by_email(db, email=email)
+        if not record:
+            return None
+        return self.update(db, db_obj=record, obj_in=obj_in)
 
     def remove(self, db: Session, *, employee_id: int) -> Optional[EmployeePersonalInformationDb]:
         db_obj = self.get(db, employee_id=employee_id)

@@ -22,7 +22,7 @@ employee_personal_information_router = APIRouter()
     "/employee-personal-information",
     response_model=EmployeePersonalInformationResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create employee personal information",
+    summary="Create or update employee personal information",
 )
 def create_personal_information(
     *,
@@ -30,7 +30,9 @@ def create_personal_information(
     payload: EmployeePersonalInformationCreate = Body(...),
 ) -> EmployeePersonalInformationResponse:
     """
-    Create a new personal information record for an employee.
+    Create or update personal information for an employee.
+    If the employee is not found in the employee table (by email), a new employee is created and returned.
+    Otherwise, the employee is taken from the employee table and information is updated by email.
     """
     return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.create(db, request=payload)
 
@@ -126,6 +128,64 @@ def delete_personal_information(
     Delete personal information for a specific employee.
     """
     return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.delete(db, employee_id=employee_id)
+
+
+# ============================================================================
+# Routes for email-based operations
+# ============================================================================
+
+@employee_personal_information_router.get(
+    "/employee-personal-information/email/{email:path}",
+    response_model=EmployeePersonalInformationResponse,
+    summary="Get employee personal information by email",
+)
+def get_personal_information_by_email(
+    *,
+    db: Session = Depends(get_db),
+    email: str,
+) -> EmployeePersonalInformationResponse:
+    """
+    Retrieve personal information for a specific employee by email.
+    """
+    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.get_by_email(db, email=email)
+
+
+@employee_personal_information_router.put(
+    "/employee-personal-information/email/{email:path}",
+    response_model=EmployeePersonalInformationResponse,
+    summary="Update employee personal information by email",
+)
+def put_personal_information_by_email(
+    *,
+    db: Session = Depends(get_db),
+    email: str,
+    payload: EmployeePersonalInformationUpdate = Body(...),
+) -> EmployeePersonalInformationResponse:
+    """
+    Update personal information for a specific employee by email.
+    """
+    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.update_by_email(
+        db, email=email, request=payload
+    )
+
+
+@employee_personal_information_router.patch(
+    "/employee-personal-information/email/{email:path}",
+    response_model=EmployeePersonalInformationResponse,
+    summary="Partial update employee personal information by email",
+)
+def patch_personal_information_by_email(
+    *,
+    db: Session = Depends(get_db),
+    email: str,
+    payload: EmployeePersonalInformationUpdate = Body(...),
+) -> EmployeePersonalInformationResponse:
+    """
+    Partially update personal information fields for a specific employee by email.
+    """
+    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.update_by_email(
+        db, email=email, request=payload
+    )
 
 
 # ============================================================================
