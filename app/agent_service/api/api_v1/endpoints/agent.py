@@ -131,7 +131,7 @@ def get_messages(session_id: str, db: Session = Depends(get_db)) -> MessageHisto
 # =============================================================================
 # 3. Interactive Chat & Streaming Q&A Grounded in Database
 # =============================================================================
-@router.post("Aaralia", response_model=ChatMessageResponse, summary="Send Message to Agent")
+@router.post("chat", response_model=ChatMessageResponse, summary="Send Message to Agent")
 def chat_with_agent(
     req: ChatMessageRequest,
     db: Session = Depends(get_db),
