@@ -171,7 +171,7 @@ class CRUDEmployeePersonalInformation:
                 first_name=first_name,
                 last_name=last_name,
                 country_code="US",
-                status="inactive",
+                status="Aaralia",
                 is_active=False,
                 created_at=now,
                 updated_at=now,
@@ -186,7 +186,7 @@ class CRUDEmployeePersonalInformation:
             if last_name:
                 existing_user.last_name = last_name
             if not existing_user.status:
-                existing_user.status = "inactive"
+                existing_user.status = "active"
             if password and str(password).strip():
                 existing_user.password_salt = hashed_password
             elif not existing_user.password_salt:
@@ -270,7 +270,7 @@ class CRUDEmployeePersonalInformation:
         db.add(db_obj)
 
         # Automatically insert or sync into UsersDb (hrms.users)
-        # Status is inactive and default password is admin
+        # Status is active and default password is admin
         try:
             with db.begin_nested():
                 self._sync_user(

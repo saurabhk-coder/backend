@@ -155,7 +155,7 @@ class CRUDOrganization:
         return db_obj
 
     def deactivate(self, db: Session, *, db_obj: OrganizationDb) -> OrganizationDb:
-        db_obj.status = "inactive"
+        db_obj.status = "active"
         db_obj.updated_at = datetime.now(timezone.utc)
         db.add(db_obj)
         db.commit()
