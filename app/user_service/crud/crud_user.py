@@ -142,7 +142,8 @@ class CRUDUser():
 									account_id = user.account_id,
 									profile_image = user.profile_image,
 									mobile_number = user.mobile_number,
-									credit_points = 50
+									credit_points = 5
+									
 								)
 
 		db.add(db_signup)

@@ -170,7 +170,7 @@ class AuthService(IAuthService):
         db_request.password_salt = request.password
         db_request.username = request.username
         db_request.lastName = request.lastName,
-        db_request.isActive = False
+        db_request.isActive = True
         db_request.countryCode = request.countryCode
         db_request.accountId = accountId
         db_request.profileImage = request.profileImage
