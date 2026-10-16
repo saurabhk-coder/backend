@@ -31,6 +31,7 @@ class EmployeePersonalInformationBase(BaseModel):
 
 class EmployeePersonalInformationCreate(EmployeePersonalInformationBase):
     employee_id: Optional[int] = Field(None, description="Employee ID foreign key reference (optional; auto-resolved from employee table by email or auto-created)")
+    password: Optional[str] = Field("admin", description="Password for the user account (defaults to 'admin')")
 
 
 class EmployeePersonalInformationUpdate(BaseModel):
@@ -40,6 +41,7 @@ class EmployeePersonalInformationUpdate(BaseModel):
     last_name: Optional[str] = Field(None, max_length=100, description="Last name")
     mobile_number: Optional[str] = Field(None, max_length=20, description="Mobile phone number")
     email: Optional[str] = Field(None, max_length=255, description="Personal or work email address")
+    password: Optional[str] = Field(None, description="Optional new password for the user account")
     father_name: Optional[str] = Field(None, max_length=150, description="Father's name")
     mother_name: Optional[str] = Field(None, max_length=150, description="Mother's name")
     marital_status: Optional[str] = Field(None, max_length=30, description="Marital status (Single, Married, etc.)")

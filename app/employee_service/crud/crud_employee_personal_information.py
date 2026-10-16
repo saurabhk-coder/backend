@@ -2,6 +2,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Union
+from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
@@ -46,6 +47,17 @@ class CRUDEmployeePersonalInformation:
         return (
             db.query(EmployeePersonalInformationDb)
             .filter(func.lower(EmployeePersonalInformationDb.email) == str(email).strip().lower())
+            .first()
+        )
+
+    def get_by_mobile_number(
+        self, db: Session, mobile_number: str
+    ) -> Optional[EmployeePersonalInformationDb]:
+        if not mobile_number or not str(mobile_number).strip():
+            return None
+        return (
+            db.query(EmployeePersonalInformationDb)
+            .filter(EmployeePersonalInformationDb.mobile_number == str(mobile_number).strip())
             .first()
         )
 
@@ -123,6 +135,7 @@ class CRUDEmployeePersonalInformation:
         first_name: Optional[str],
         last_name: Optional[str],
         organization_id: Optional[Union[uuid.UUID, str]],
+        password: Optional[str] = "admin",
         now: datetime,
     ) -> Optional[UsersDb]:
         user_email = (
@@ -145,7 +158,9 @@ class CRUDEmployeePersonalInformation:
                         org_uuid = None
             except Exception:
                 pass
-        hashed_password = PWD_CONTEXT.hash("admin")
+
+        user_password = password if (password and str(password).strip()) else "admin"
+        hashed_password = PWD_CONTEXT.hash(user_password)
 
         if not existing_user:
             new_user = UsersDb(
@@ -172,7 +187,9 @@ class CRUDEmployeePersonalInformation:
                 existing_user.last_name = last_name
             if not existing_user.status:
                 existing_user.status = "inactive"
-            if not existing_user.password_salt:
+            if password and str(password).strip():
+                existing_user.password_salt = hashed_password
+            elif not existing_user.password_salt:
                 existing_user.password_salt = hashed_password
             existing_user.updated_at = now
             db.add(existing_user)
@@ -185,10 +202,12 @@ class CRUDEmployeePersonalInformation:
             data = dict(obj_in)
             email_val = data.get("email")
             emp_id_val = data.get("employee_id")
+            password_val = data.pop("password", None) or "admin"
         else:
             data = obj_in.model_dump()
             email_val = obj_in.email
             emp_id_val = obj_in.employee_id
+            password_val = data.pop("password", None) or "admin"
 
         # 1. Check if employee already exists in employee personal information table by email
         existing = None
@@ -199,11 +218,23 @@ class CRUDEmployeePersonalInformation:
         if not existing and emp_id_val:
             existing = self.get(db, employee_id=emp_id_val)
 
+        # 3. Check mobile number uniqueness
+        mobile_val = data.get("mobile_number")
+        if mobile_val and str(mobile_val).strip():
+            clean_mobile = str(mobile_val).strip()
+            existing_mobile = self.get_by_mobile_number(db, clean_mobile)
+            if existing_mobile:
+                if not existing or existing_mobile.employee_id != existing.employee_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Employee personal information with mobile number '{clean_mobile}' already exists",
+                    )
+
         if existing:
             # Found in employee table: take employee_id from employee table and update information by email
             return self.update(db, db_obj=existing, obj_in=obj_in)
 
-        # 3. Not found in employee table: create in EmployeeDb (employees table) and return
+        # 4. Not found in employee table: create in EmployeeDb (employees table) and return
         if emp_id_val:
             emp = db.query(EmployeeDb).filter(EmployeeDb.id == emp_id_val).first()
             if not emp:
@@ -239,7 +270,7 @@ class CRUDEmployeePersonalInformation:
         db.add(db_obj)
 
         # Automatically insert or sync into UsersDb (hrms.users)
-        # Status is inactive and password is admin
+        # Status is inactive and default password is admin
         try:
             with db.begin_nested():
                 self._sync_user(
@@ -249,6 +280,7 @@ class CRUDEmployeePersonalInformation:
                     first_name=data.get("first_name"),
                     last_name=data.get("last_name"),
                     organization_id=data.get("organization_id"),
+                    password=password_val,
                     now=now,
                 )
         except Exception as exc:
@@ -266,9 +298,23 @@ class CRUDEmployeePersonalInformation:
         obj_in: Union[EmployeePersonalInformationUpdate, Dict[str, Any]],
     ) -> EmployeePersonalInformationDb:
         if isinstance(obj_in, dict):
-            update_data = obj_in
+            update_data = dict(obj_in)
         else:
             update_data = obj_in.model_dump(exclude_unset=True)
+
+        password_val = update_data.pop("password", None)
+
+        # Check mobile number uniqueness if mobile_number is being updated
+        if "mobile_number" in update_data:
+            mobile_val = update_data.get("mobile_number")
+            if mobile_val and str(mobile_val).strip():
+                clean_mobile = str(mobile_val).strip()
+                existing_mobile = self.get_by_mobile_number(db, clean_mobile)
+                if existing_mobile and existing_mobile.employee_id != db_obj.employee_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Employee personal information with mobile number '{clean_mobile}' already exists",
+                    )
 
         for field, value in update_data.items():
             if field == "organization_id" and value is not None:
@@ -280,7 +326,6 @@ class CRUDEmployeePersonalInformation:
         db.add(db_obj)
 
         # Automatically insert or sync into UsersDb (hrms.users)
-        # Status is inactive and password is admin
         try:
             with db.begin_nested():
                 self._sync_user(
@@ -290,6 +335,7 @@ class CRUDEmployeePersonalInformation:
                     first_name=db_obj.first_name,
                     last_name=db_obj.last_name,
                     organization_id=db_obj.organization_id,
+                    password=password_val,
                     now=db_obj.updated_at,
                 )
         except Exception as exc:

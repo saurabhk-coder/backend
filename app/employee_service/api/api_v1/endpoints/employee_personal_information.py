@@ -217,13 +217,10 @@ def create_nested_personal_information(
     *,
     db: Session = Depends(get_db),
     employee_id: int,
-    payload: EmployeePersonalInformationBase = Body(...),
+    payload: EmployeePersonalInformationCreate = Body(...),
 ) -> EmployeePersonalInformationResponse:
-    create_schema = EmployeePersonalInformationCreate(
-        employee_id=employee_id,
-        **payload.model_dump(),
-    )
-    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.create(db, request=create_schema)
+    payload.employee_id = employee_id
+    return EMPLOYEE_PERSONAL_INFORMATION_SERVICE.create(db, request=payload)
 
 
 @employee_personal_information_router.put(

@@ -32,7 +32,7 @@ class EmployeePersonalInformationDb(Base):
     profile_photo = Column(Text, nullable=True)
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=True)
-    mobile_number = Column(String(20), nullable=True)
+    mobile_number = Column(String(20), nullable=True, unique=True, index=True)
     email = Column(String(255), nullable=True)
     father_name = Column(String(150), nullable=True)
     mother_name = Column(String(150), nullable=True)

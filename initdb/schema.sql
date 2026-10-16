@@ -259,6 +259,7 @@ CREATE TABLE IF NOT EXISTS hrms.employee_personal_information (
 );
 
 CREATE INDEX IF NOT EXISTS idx_emp_personal_org_id ON hrms.employee_personal_information (organization_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_emp_personal_mobile_number ON hrms.employee_personal_information (mobile_number) WHERE mobile_number IS NOT NULL;
 
 -- ============================================================================
 -- 10. hrms.employee_professional_information (Employee Education & Past Experience)

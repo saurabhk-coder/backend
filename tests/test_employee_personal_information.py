@@ -481,6 +481,125 @@ class TestEmployeePersonalInformationEndpoints(unittest.TestCase):
         nf_res = self.client.get("/api/v1/employee-personal-information/email/unknown@example.com")
         self.assertEqual(nf_res.status_code, 404)
 
+    def test_create_employee_default_password_admin_in_user(self):
+        # Create an employee without providing password field
+        payload = {
+            "first_name": "Diana",
+            "last_name": "Prince",
+            "email": "diana@example.com",
+            "city": "Themyscira",
+        }
+        res = self.client.post("/api/v1/employee-personal-information", json=payload)
+        self.assertEqual(res.status_code, 201)
+
+        # Verify that the user in UsersDb has the default password 'admin'
+        db = self.TestingSessionLocal()
+        try:
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            user = db.query(UsersDb).filter(UsersDb.email == "diana@example.com").first()
+            self.assertIsNotNone(user)
+            self.assertTrue(pwd_context.verify("admin", user.password_salt))
+        finally:
+            db.close()
+
+    def test_create_employee_custom_password_in_user(self):
+        # Create an employee with a custom password provided in payload
+        payload = {
+            "first_name": "Barry",
+            "last_name": "Allen",
+            "email": "barry@example.com",
+            "password": "SpeedsterPassword!2026",
+            "city": "Central City",
+        }
+        res = self.client.post("/api/v1/employee-personal-information", json=payload)
+        self.assertEqual(res.status_code, 201)
+
+        # Verify that the user in UsersDb has the custom password
+        db = self.TestingSessionLocal()
+        try:
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            user = db.query(UsersDb).filter(UsersDb.email == "barry@example.com").first()
+            self.assertIsNotNone(user)
+            self.assertTrue(pwd_context.verify("SpeedsterPassword!2026", user.password_salt))
+        finally:
+            db.close()
+
+    def test_duplicate_mobile_number_gives_error_on_create(self):
+        # 1. Create first employee with mobile number
+        payload1 = {
+            "first_name": "Arthur",
+            "last_name": "Curry",
+            "email": "arthur@example.com",
+            "mobile_number": "+19998887777",
+        }
+        res1 = self.client.post("/api/v1/employee-personal-information", json=payload1)
+        self.assertEqual(res1.status_code, 201)
+
+        # 2. Attempt to create second employee with duplicate mobile number
+        payload2 = {
+            "first_name": "Mera",
+            "last_name": "Curry",
+            "email": "mera@example.com",
+            "mobile_number": "+19998887777",
+        }
+        res2 = self.client.post("/api/v1/employee-personal-information", json=payload2)
+        self.assertEqual(res2.status_code, 409)
+        self.assertIn("already exists", res2.json()["detail"])
+
+    def test_duplicate_mobile_number_gives_error_on_update(self):
+        # 1. Create employee 1
+        res1 = self.client.post(
+            "/api/v1/employee-personal-information",
+            json={
+                "first_name": "Clark",
+                "email": "clark@example.com",
+                "mobile_number": "+15554443333",
+            },
+        )
+        self.assertEqual(res1.status_code, 201)
+
+        # 2. Create employee 2 with different mobile number
+        res2 = self.client.post(
+            "/api/v1/employee-personal-information",
+            json={
+                "first_name": "Lois",
+                "email": "lois@example.com",
+                "mobile_number": "+15554442222",
+            },
+        )
+        self.assertEqual(res2.status_code, 201)
+        lois_id = res2.json()["employee_id"]
+
+        # 3. Employee 2 tries to update mobile number to employee 1's mobile number
+        patch_res = self.client.patch(
+            f"/api/v1/employee-personal-information/{lois_id}",
+            json={"mobile_number": "+15554443333"},
+        )
+        self.assertEqual(patch_res.status_code, 409)
+        self.assertIn("already exists", patch_res.json()["detail"])
+
+    def test_same_employee_can_keep_own_mobile_number(self):
+        # Create employee
+        res = self.client.post(
+            "/api/v1/employee-personal-information",
+            json={
+                "first_name": "Victor",
+                "email": "victor@example.com",
+                "mobile_number": "+17776665555",
+            },
+        )
+        self.assertEqual(res.status_code, 201)
+        vic_id = res.json()["employee_id"]
+
+        # Update other fields while keeping same mobile number -> should succeed
+        patch_res = self.client.patch(
+            f"/api/v1/employee-personal-information/{vic_id}",
+            json={"city": "Detroit", "mobile_number": "+17776665555"},
+        )
+        self.assertEqual(patch_res.status_code, 200)
+        self.assertEqual(patch_res.json()["city"], "Detroit")
+        self.assertEqual(patch_res.json()["mobile_number"], "+17776665555")
+
 
 if __name__ == "__main__":
     unittest.main()
